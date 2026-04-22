@@ -1,0 +1,31 @@
+# Secrets
+.env
+
+# Runtime lock file
+.lock
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# State files (re-fetched from Alpaca each run)
+state/positions.json
+state/account.json
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp

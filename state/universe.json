@@ -1,0 +1,12 @@
+{
+  "status": "WEEK_1_STUB",
+  "locked": false,
+  "note": "Full universe pending operator review and lock. Week-1 trading restricted to SPY and QQQ only.",
+  "tickers": ["SPY", "QQQ"],
+  "sector_map": {
+    "SPY": "ETF",
+    "QQQ": "ETF"
+  },
+  "locked_at": null,
+  "proposed_at": null
+}

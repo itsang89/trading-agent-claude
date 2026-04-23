@@ -23,7 +23,7 @@ except ImportError:
 
 def main():
     parser = argparse.ArgumentParser(description="Send email via Gmail SMTP")
-    parser.add_argument("--to", default="motivationmaven89@gmail.com")
+    parser.add_argument("--to", default="tsangyatlongit@gmail.com")
     parser.add_argument("--subject", required=True)
     parser.add_argument("--body", help="Email body text")
     parser.add_argument("--body-file", help="Path to file containing email body")

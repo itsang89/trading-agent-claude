@@ -77,6 +77,25 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 
 ---
 
+## [2026-04-23 ~16:34 ET — EOD Routine]
+
+**EOD ROUTINE COMPLETED — 2026-04-23**
+- Equity: $10,000.00 | Cash: 100% | Positions: 0 | Day P&L: $0.00
+- vs SPY today: agent 0.00% vs SPY -0.51% (agent in cash; pre-experiment period)
+- Experiment starts 2026-04-27. No trades executed. No stop-loss events.
+- state/last-session.md updated. metrics/daily-metrics.csv appended.
+- Committed and pushed to main (commit: eod: 2026-04-23).
+
+**DATA QUALITY NOTE — metrics/daily-metrics.csv double-write:**
+- The EOD routine prompt instructs the LLM to run append_metrics.py, but the Makefile also runs it after the LLM finishes (per design note in [2026-04-22]). This causes 2 rows per day for 2026-04-23.
+- Recommendation: remove `python3 tools/append_metrics.py` from the EOD prompt, or add date-deduplication to append_metrics.py.
+
+**EMAIL TOOL ERROR — EOD routine:**
+- `tools/send_email.py` timed out (>20s). Consistent with prior SMTP failures.
+- Email summary not sent. Email cannot be delivered until IPv4 SMTP is available.
+
+---
+
 ## [2026-04-23 ~16:30 ET]
 
 **EMAIL TOOL ERROR — end-of-day-review routine**

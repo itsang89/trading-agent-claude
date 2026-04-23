@@ -126,7 +126,7 @@ git config user.email "trading-agent@users.noreply.github.com"
 git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ learnings/ CLAUDE.md notes-for-operator.md
 git commit -m "weekly-review: $(date +%Y-%m-%d)" || echo "Nothing to commit"
-git push
+git push origin HEAD:main
 ```
 If push fails, log the error to notes-for-operator.md.
 

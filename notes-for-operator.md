@@ -74,3 +74,19 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - [ ] Review and run `make run-premarket` manually on the first morning to generate `universe-proposal.md`
 - [ ] Review `universe-proposal.md`, update `state/universe.json`, lock the universe
 - [ ] Update the universe section in `CLAUDE.md` before week-2 begins
+
+---
+
+## [2026-04-23 ~10:54 ET]
+
+**EMAIL TOOL ERROR — pre-market-research routine**
+- `tools/send_email.py` failed: `[Errno 97] Address family not supported by protocol`
+- Same IPv6 network error as prior note. Email summaries will not send until network supports IPv4 SMTP (port 587).
+- All other routine steps completed successfully.
+- Pre-market journal, universe proposal, and state files committed and pushed to main.
+
+**OPERATOR ACTION REQUIRED:**
+1. Review `universe-proposal.md` (12 tickers, 6 GICS sectors, 3 ETFs per strategy.md recommendation).
+2. If approved, lock `state/universe.json` with full universe before Week 2 (2026-05-04).
+3. Experiment start date confirmed: 2026-04-27 (Monday). Execution routine should run that morning.
+4. QQQ signals: BULLISH + RS POSITIVE (+2.72%) — buy intent queued for 2026-04-27 at 5% of equity.

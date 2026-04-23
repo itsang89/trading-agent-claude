@@ -18,7 +18,7 @@
 **Exit:** Three triggers in priority order: (1) loss ≥ 8% from avg_entry — market-sell immediately; (2) price drops below 20-day SMA — soft exit, sell next execution; (3) RS_spread < −1% for 2 consecutive sessions — soft exit, sell next execution.
 **Sizing:** 5% default · 7% high conviction (RS_spread > 3% AND up >1% on day, must document) · 10% maximum.
 **Portfolio shape:** 4–6 concurrent positions · ≥25% cash at all times (above the 20% hard floor).
-**Never hold SPY as a position.** SPY is only the RS benchmark denominator.
+**Never hold SPY as a position** (including Week 1 — QQQ is the only valid Week-1 holding; SPY is in the universe but cannot beat itself). SPY is only the RS benchmark denominator.
 **Full signal arithmetic:** `state/strategy.md` — read this every pre-market session.
 
 ---
@@ -175,9 +175,10 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 
 Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.md`) tells you exactly what to read and in what order. The mandatory read sequence is always:
 1. This file (CLAUDE.md) — especially LEARNED BEHAVIORS below
-2. `state/last-session.md` — prior session's handoff note
-3. The 3 most recent journal entries
-4. Live state from Alpaca tools
+2. `state/strategy.md` — signal arithmetic, entry/exit rules, sizing table
+3. `state/last-session.md` — prior session's handoff note
+4. The 3 most recent journal entries
+5. Live state from Alpaca tools
 
 ---
 

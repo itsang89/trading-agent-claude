@@ -11,7 +11,8 @@ Trading-agent-claude/
 ├── state/
 │   ├── positions.json       # Current holdings (cache from Alpaca — overwrite each routine)
 │   ├── account.json         # Account snapshot (overwrite each routine)
-│   └── universe.json        # Locked universe + sector map (set week 1, read-only after)
+│   ├── universe.json        # Locked universe + sector map (set week 1, read-only after)
+│   └── strategy.md          # Strategy rules and signal arithmetic (operator edits only, read every session)
 │
 ├── trades/
 │   └── trades.csv           # Append-only trade log
@@ -161,6 +162,7 @@ date,equity,cash,day_pnl_abs,day_pnl_pct,spy_close,spy_day_return,cum_return,cum
 | `state/positions.json` | Read+Write | Read+Write | Read | Read |
 | `state/account.json` | Read+Write | Read+Write | Read | — |
 | `state/universe.json` | Read | Read | — | Read |
+| `state/strategy.md` | Read | Read | Read | Read |
 | `trades/trades.csv` | — | (via tool) | — | Read |
 | `journal/*.md` | Read 3, Write | Read today's, Write | Write | Read all week, Write |
 | `metrics/daily-metrics.csv` | — | — | Read | Read |

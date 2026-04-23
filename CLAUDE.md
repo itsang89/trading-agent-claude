@@ -19,7 +19,7 @@
 **Sizing:** 5% default · 7% high conviction (RS_spread > 3% AND up >1% on day, must document) · 10% maximum.
 **Portfolio shape:** 4–6 concurrent positions · ≥25% cash at all times (above the 20% hard floor).
 **Never hold SPY as a position** (including Week 1 — QQQ is the only valid Week-1 holding; SPY is in the universe but cannot beat itself). SPY is only the RS benchmark denominator.
-**Full signal arithmetic:** `state/strategy.md` — read this every pre-market session.
+**Full signal arithmetic:** `state/strategy.md` — read this every session.
 
 ---
 

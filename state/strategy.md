@@ -50,7 +50,7 @@ All five conditions must be true to open a new position:
 1. Ticker is in `state/universe.json`
 2. Trend = BULLISH (close_today > sma_20)
 3. RS = POSITIVE (RS_spread > 0%)
-4. Current open positions < 8
+4. Current open positions < 6
 5. Cash after trade ≥ 25% of equity
    (Strategy preference is 25%; the validator enforces 20% as the hard floor — do not confuse the two)
 

@@ -80,7 +80,7 @@ Form your trading views for today using the signal outputs from Step 7b. Require
 - **Soft exits:** Any held position flagged in Step 7b (Trend BEARISH or RS NEGATIVE) → add sell intent for execution routine.
 - **Hard stops:** Any position with loss ≥ 8% → already queued from Step 6; confirm here.
 - **Sizing:** Default 5% of equity. Up to 7% only if RS_spread > 3% AND close_today > close_yesterday by >1% (use bars[-1] and bars[-2]) — document the reason. Never exceed 10%.
-- **Position count:** Target 4–6 concurrent positions (strategy preference). Do not exceed 6 unless all signals are unusually strong; hard max is 8 (enforced by validator). Do not open new positions if cash would fall below 25%.
+- **Position count:** Target 4–6 concurrent positions. Do not exceed 6; hard max is 8 (enforced by validator). Do not open new positions if cash would fall below 25%.
 - If changing a prior stated position (from journals), explicitly write why.
 - Do not form intents that contradict the LEARNED BEHAVIORS in CLAUDE.md without justifying the exception.
 - Week 1: Only QQQ is eligible for new positions (holding SPY cannot beat SPY).

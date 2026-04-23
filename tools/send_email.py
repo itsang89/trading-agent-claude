@@ -30,7 +30,7 @@ class _IPv6PreferredSMTP(smtplib.SMTP):
                 sock = None
                 try:
                     sock = socket.socket(af_, socktype, proto)
-                    if timeout is not smtplib._GLOBAL_DEFAULT_TIMEOUT:
+                    if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
                         sock.settimeout(timeout)
                     sock.connect(sa)
                     return sock

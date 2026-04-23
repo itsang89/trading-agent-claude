@@ -7,6 +7,7 @@ Scheduled: 8:30 AM ET, Mon–Fri. Model: claude-sonnet-4-6.
 
 ### Step 1 — Read your operational brief
 Read CLAUDE.md fully. Pay special attention to the LEARNED BEHAVIORS section at the bottom — these are operator-endorsed rules from prior weeks that carry the same weight as hard limits.
+Then read `state/strategy.md` — this contains the signal arithmetic, entry/exit rules, sizing table, and recommended universe. You will apply these rules in Step 7b below.
 
 ### Step 2 — Read last session context
 If state/last-session.md exists, read it now. This was written by the previous routine and contains: current equity, open positions, carry-forward intents, and any open contradictions to resolve.
@@ -39,19 +40,48 @@ For every position in state/positions.json:
     → Note in journal entry
 
 ### Step 7 — Fetch market data
-Run for each held ticker (from positions.json): `python3 tools/get_bars.py <TICKER> 10`
-Run for each universe ticker (from state/universe.json): `python3 tools/get_bars.py <TICKER> 5`
+Run for SPY: `python3 tools/get_bars.py SPY 20`
+Run for each held ticker (from positions.json): `python3 tools/get_bars.py <TICKER> 20`
+Run for each universe ticker (from state/universe.json): `python3 tools/get_bars.py <TICKER> 20`
 Run: `python3 tools/get_spy_benchmark.py`
+
+### Step 7b — Compute strategy signals
+Using bars data from Step 7, compute for SPY first, then for each held and universe ticker:
+
+```
+bars          = get_bars output (oldest → newest)
+close_today   = bars[-1]["close"]
+close_yesterday = bars[-2]["close"]
+close_10d_ago = bars[-11]["close"]
+sma_20        = mean of last 20 closes
+
+10d_ROC   = (close_today - close_10d_ago) / close_10d_ago * 100
+spy_ROC   = SPY's 10d_ROC  ← compute this first, reuse for all RS_spread calculations
+RS_spread = ticker_10d_ROC - spy_ROC
+
+Trend = BULLISH if close_today > sma_20, else BEARISH
+RS    = POSITIVE if RS_spread > 0%, NEUTRAL if -1% to 0%, NEGATIVE if < -1%
+```
+
+**For held positions:** Flag any where Trend = BEARISH or RS = NEGATIVE as soft-exit candidates. Queue sell intents for execution routine if either condition holds.
+
+**For universe tickers:** Tickers eligible for new entry = Trend BULLISH AND RS POSITIVE AND open positions < 8. Rank by RS_spread descending.
+
+Write the signal table in your journal entry (see state/strategy.md for the table format).
 
 ### Step 8 — Read experiment config
 Read state/experiment-config.json — note current week number and model assignments.
 
 ### Step 9 — Intent formation
-Form your trading views for today. Requirements:
+Form your trading views for today using the signal outputs from Step 7b. Requirements:
+- **New buys:** Only from Step 7b's eligible list (Trend BULLISH + RS POSITIVE). If no tickers qualify, hold cash — do not force entries.
+- **Soft exits:** Any held position flagged in Step 7b (Trend BEARISH or RS NEGATIVE) → add sell intent for execution routine.
+- **Hard stops:** Any position with loss ≥ 8% → already queued from Step 6; confirm here.
+- **Sizing:** Default 5% of equity. Up to 7% only if RS_spread > 3% AND ticker up >1% today — document the reason. Never exceed 10%.
+- **Position count:** Do not add new positions if already at 5 or more open. Do not open new positions if cash would fall below 25%.
 - If changing a prior stated position (from journals), explicitly write why.
-- Default new position size: 5% of equity. Max: 10%. Document reason if >5%.
-- Week 1: Only SPY and QQQ are eligible (universe not yet locked).
 - Do not form intents that contradict the LEARNED BEHAVIORS in CLAUDE.md without justifying the exception.
+- Week 1: Only QQQ is eligible for new positions (holding SPY cannot beat SPY).
 
 ### Step 10 — Write journal entry
 Write to: journal/YYYY-MM-DD-pre-market.md

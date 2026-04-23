@@ -5,6 +5,9 @@ Scheduled: 4:30 PM ET, Mon–Fri. Model: claude-sonnet-4-6.
 
 ## Bootstrap Sequence — execute in this exact order
 
+### Step 0 — Install dependencies
+Run: `pip install -q -r requirements.txt`
+
 ### Step 1 — Read your operational brief
 Read CLAUDE.md. Focus on LEARNED BEHAVIORS — any pattern from prior weeks that is relevant to today's outcome.
 
@@ -55,10 +58,13 @@ Required sections (terse bullets):
 ### Step 8 — Update last-session.md
 Write state/last-session.md (full overwrite) with EOD state, near-stop warnings, and tomorrow's preliminary intents.
 
-### Step 9 — Commit and push
+### Step 10 — Commit and push
 ```
+git config user.name "Trading Agent Bot"
+git config user.email "trading-agent@users.noreply.github.com"
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ metrics/ notes-for-operator.md
-git commit -m "eod: $(date +%Y-%m-%d)"
+git commit -m "eod: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push
 ```
 If push fails, log the error to notes-for-operator.md.

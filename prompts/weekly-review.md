@@ -7,6 +7,9 @@ This is the highest-fidelity session of the week. Take time to reason carefully.
 
 ## Bootstrap Sequence — execute in this exact order
 
+### Step 0 — Install dependencies
+Run: `pip install -q -r requirements.txt`
+
 ### Step 1 — Read your operational brief
 Read CLAUDE.md fully, including the LEARNED BEHAVIORS section.
 
@@ -118,8 +121,11 @@ Week 4 additional task: Write retrospective.md with full experiment summary per 
 
 ### Step 10 — Commit and push
 ```
+git config user.name "Trading Agent Bot"
+git config user.email "trading-agent@users.noreply.github.com"
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ learnings/ CLAUDE.md notes-for-operator.md
-git commit -m "weekly-review: $(date +%Y-%m-%d)"
+git commit -m "weekly-review: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push
 ```
 If push fails, log the error to notes-for-operator.md.

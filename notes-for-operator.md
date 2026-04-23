@@ -90,3 +90,9 @@ URL: https://paper-api.alpaca.markets/v2/clock
 - Verify Alpaca paper API is reachable: `curl https://paper-api.alpaca.markets/v2/clock -H "APCA-API-KEY-ID: <key>"`
 - Re-run `make run-premarket` once API is confirmed healthy
 - Note: This is the first intended live routine run (today is 2026-04-23, Week 1). Universe proposal has NOT yet been written — that will happen on the first successful pre-market run.
+
+## [2026-04-23 08:31 ET] — Email Send Failed
+
+`send_email.py` returned: `ERROR sending email: [Errno 97] Address family not supported by protocol`
+
+This is a network-layer error (likely IPv6 not supported in this environment). Email summary was not delivered. See journal/2026-04-23-pre-market.md for routine summary.

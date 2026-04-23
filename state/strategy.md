@@ -21,6 +21,7 @@ bars          = get_bars output, sorted oldest → newest
 close_today   = bars[-1]["close"]
 close_10d_ago = bars[-11]["close"]   # 10 trading days back (index -11 = 11th from end)
 sma_20        = mean of bars[-20]["close"] through bars[-1]["close"]  # last 20 closes
+close_yesterday = bars[-2]["close"]   # previous session's close (for high-conviction check)
 
 ticker_10d_ROC = (close_today - close_10d_ago) / close_10d_ago * 100
 spy_10d_ROC    = same calculation for SPY  ← always compute, even if SPY not held
@@ -49,8 +50,9 @@ All five conditions must be true to open a new position:
 1. Ticker is in `state/universe.json`
 2. Trend = BULLISH (close_today > sma_20)
 3. RS = POSITIVE (RS_spread > 0%)
-4. Current open positions < 5
+4. Current open positions < 8
 5. Cash after trade ≥ 25% of equity
+   (Strategy preference is 25%; the validator enforces 20% as the hard floor — do not confuse the two)
 
 **Ranking:** When multiple tickers are eligible, rank by RS_spread descending. Buy highest first.
 
@@ -66,6 +68,8 @@ All five conditions must be true to open a new position:
 
 Soft exits exist to avoid panic-selling on a single bad close. If a soft exit is flagged at EOD, the execution routine sells at open the next day.
 
+A single session where RS_spread ≥ −1% resets the 2-session counter for Exit Rule 3.
+
 ---
 
 ## Sizing Rules
@@ -76,9 +80,14 @@ Soft exits exist to avoid panic-selling on a single bad close. If a soft exit is
 | High conviction | 7% of equity | RS_spread > 3% AND close_today > close_yesterday by >1% — must document in journal |
 | Maximum | 10% of equity | Hard limit; validator will reject above this |
 | Adding to winner | Up to 7% total | Only if current position < 7% AND both signals still positive |
-| Target concurrent positions | 4–6 | Keeps ~25–30% cash above the 20% hard floor |
+
+Add quantity = floor((0.07 × equity - current_position_market_value) / current_price)
+Note: avg_entry recalculates upward after adding shares, raising the hard-stop trigger price.
+
+| Target concurrent positions | 4–6 (strategy preference; hard limit is 8) | Keeps ~25–30% cash above the 20% hard floor |
 
 Any position sized ≥ 7% requires explicit written rationale in the journal entry.
+Evaluate high-conviction criteria at entry time. Do not resize an existing position to 7% solely because criteria are met post-entry.
 
 ---
 
@@ -110,7 +119,7 @@ Validation: 12 tickers ✓ · 6 GICS sectors ✓ · 3 ETFs ✓ · all market cap
 - Universe = {SPY, QQQ} only until operator locks
 - QQQ is the ONLY valid position (holding SPY cannot beat SPY)
 - Compute Trend and RS_spread for QQQ vs SPY each session
-- If QQQ: Trend = BULLISH AND RS = POSITIVE → hold at 5–7%, rest cash
+- If QQQ: Trend = BULLISH AND RS = POSITIVE → open or maintain a position at 5–7%; keep remaining equity in cash
 - If QQQ fails either signal → 100% cash, document in journal
 - SPY is always the RS denominator, never a position
 

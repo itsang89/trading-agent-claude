@@ -77,6 +77,16 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 
 ---
 
+## [2026-04-23 ~16:30 ET]
+
+**EMAIL TOOL ERROR — end-of-day-review routine**
+- `tools/send_email.py` failed: `module 'smtplib' has no attribute '_GLOBAL_DEFAULT_TIMEOUT'`
+- This is a Python/smtplib compatibility error (different from prior IPv6 error).
+- EOD routine completed successfully. All files committed and pushed.
+- Email summaries will not send until send_email.py is fixed or compatible environment provided.
+
+---
+
 ## [2026-04-23 ~10:54 ET]
 
 **EMAIL TOOL ERROR — pre-market-research routine**

@@ -74,3 +74,19 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - [ ] Review and run `make run-premarket` manually on the first morning to generate `universe-proposal.md`
 - [ ] Review `universe-proposal.md`, update `state/universe.json`, lock the universe
 - [ ] Update the universe section in `CLAUDE.md` before week-2 begins
+
+## [2026-04-23 08:30 ET] — Pre-Market Routine HALTED
+
+**Error:** Alpaca API returned 503 Service Unavailable on `get_market_status.py`.
+
+```
+alpaca.common.exceptions.APIError: DNS cache overflow
+URL: https://paper-api.alpaca.markets/v2/clock
+```
+
+**Action taken:** Routine stopped per CLAUDE.md rule — "Tool error → log it, stop the routine. Do not retry. Do not improvise."
+
+**Next steps for operator:**
+- Verify Alpaca paper API is reachable: `curl https://paper-api.alpaca.markets/v2/clock -H "APCA-API-KEY-ID: <key>"`
+- Re-run `make run-premarket` once API is confirmed healthy
+- Note: This is the first intended live routine run (today is 2026-04-23, Week 1). Universe proposal has NOT yet been written — that will happen on the first successful pre-market run.

@@ -12,6 +12,17 @@
 
 ---
 
+## Strategy Framework
+
+**Entry:** Buy when BOTH signals agree: (1) price > 20-day SMA (uptrend) AND (2) ticker's 10-day return > SPY's 10-day return (outperforming benchmark).
+**Exit:** Three triggers in priority order: (1) loss ≥ 8% from avg_entry — market-sell immediately; (2) price drops below 20-day SMA — soft exit, sell next execution; (3) RS_spread < −1% for 2 consecutive sessions — soft exit, sell next execution.
+**Sizing:** 5% default · 7% high conviction (RS_spread > 3% AND up >1% on day, must document) · 10% maximum.
+**Portfolio shape:** 4–6 concurrent positions · ≥25% cash at all times (above the 20% hard floor).
+**Never hold SPY as a position.** SPY is only the RS benchmark denominator.
+**Full signal arithmetic:** `state/strategy.md` — read this every pre-market session.
+
+---
+
 ## Universe
 
 **Week 1 (current):** Trade SPY and QQQ only while operator reviews universe proposal.

@@ -98,5 +98,25 @@ Required sections (terse bullets, numbers over prose):
 ### Step 11 — Update last-session.md
 Write state/last-session.md (full overwrite) using the schema in MEMORY.md.
 
+### Step 12 — Commit and push
+Stage and commit all new/modified files:
+```
+git add journal/ state/ logs/ notes-for-operator.md
+git commit -m "pre-market: $(date +%Y-%m-%d)"
+git push
+```
+If push fails, log the error to notes-for-operator.md.
+
+### Step 13 — Email summary
+Send an email via Gmail to motivationmaven89@gmail.com:
+- **Subject:** `Trading Agent Pre-Market — YYYY-MM-DD`
+- **Body (terse bullets):**
+  - Market status: open / closed / early close
+  - Equity: $X | Cash: X% | Positions: N
+  - Cumulative return vs SPY: agent X% vs SPY X%
+  - Stop-loss flags: [list any queued sells, or "none"]
+  - Today's intents: [buy/sell list with sizes]
+  - Errors or operator notes: [any tool errors or notes-for-operator entries]
+
 ---
 Rules: If any tool returns an error, log it to notes-for-operator.md and STOP. Do not retry. Do not improvise.

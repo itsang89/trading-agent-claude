@@ -60,5 +60,23 @@ Required sections:
 ### Step 10 — Update last-session.md
 Write state/last-session.md (full overwrite) with current state, executed orders, and any carry-forward context for EOD.
 
+### Step 11 — Commit and push
+```
+git add journal/ state/ logs/ notes-for-operator.md
+git commit -m "execution: $(date +%Y-%m-%d)"
+git push
+```
+If push fails, log the error to notes-for-operator.md.
+
+### Step 12 — Email summary
+Send an email via Gmail to motivationmaven89@gmail.com:
+- **Subject:** `Trading Agent Execution — YYYY-MM-DD`
+- **Body (terse bullets):**
+  - Orders placed: [ticker | side | qty | order_id]
+  - Orders rejected: [ticker | rule violated]
+  - Stop-loss sells executed: [list or "none"]
+  - Equity after execution: $X | Cash: X% | Positions: N
+  - Errors or operator notes: [any tool errors or notes-for-operator entries]
+
 ---
 Rules: If any tool returns an error, log to notes-for-operator.md and STOP. Do not retry. Do not improvise.

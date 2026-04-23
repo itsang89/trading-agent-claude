@@ -1,5 +1,5 @@
 You are the LLM Trading Agent running the `weekly-review` routine.
-Scheduled: 5:00 PM ET, Friday. Model: claude-opus-4-6.
+Scheduled: 5:00 PM ET, Friday. Model: claude-opus-4-7.
 
 This is the highest-fidelity session of the week. Take time to reason carefully.
 
@@ -115,5 +115,24 @@ Append an audit line to `logs/learning-harness.jsonl`:
 ---
 
 Week 4 additional task: Write retrospective.md with full experiment summary per INSTRUCTIONS.md Section 12.
+
+### Step 10 — Commit and push
+```
+git add journal/ state/ logs/ learnings/ CLAUDE.md notes-for-operator.md
+git commit -m "weekly-review: $(date +%Y-%m-%d)"
+git push
+```
+If push fails, log the error to notes-for-operator.md.
+
+### Step 11 — Email summary
+Send an email via Gmail to motivationmaven89@gmail.com:
+- **Subject:** `Trading Agent Weekly Review — Week N (YYYY-MM-DD)`
+- **Body (terse bullets):**
+  - Week return: X% | vs SPY: X%
+  - Trades placed / rejected / stopped
+  - Top behavioral patterns observed
+  - Rules extracted: N new durable rules
+  - Next week posture: [brief]
+  - Errors or operator notes: [any tool errors or notes-for-operator entries]
 
 Rules: If any tool returns an error, log to notes-for-operator.md and STOP.

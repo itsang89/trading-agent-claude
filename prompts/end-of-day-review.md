@@ -55,6 +55,25 @@ Required sections (terse bullets):
 ### Step 8 — Update last-session.md
 Write state/last-session.md (full overwrite) with EOD state, near-stop warnings, and tomorrow's preliminary intents.
 
+### Step 9 — Commit and push
+```
+git add journal/ state/ logs/ metrics/ notes-for-operator.md
+git commit -m "eod: $(date +%Y-%m-%d)"
+git push
+```
+If push fails, log the error to notes-for-operator.md.
+
+### Step 10 — Email summary
+Send an email via Gmail to motivationmaven89@gmail.com:
+- **Subject:** `Trading Agent EOD — YYYY-MM-DD`
+- **Body (terse bullets):**
+  - Day P&L: $X (X%) | vs SPY today: agent X% vs SPY X%
+  - Cumulative: agent X% vs SPY X%
+  - Positions: [ticker | unrealized P&L | % from stop]
+  - Near-stop warnings: [list or "none"]
+  - Tomorrow's intent: [brief]
+  - Errors or operator notes: [any tool errors or notes-for-operator entries]
+
 ---
 Note: `make run-eod` will automatically run `python3 tools/append_metrics.py` after this routine to write the structured metrics row. You do not need to do this yourself.
 

@@ -11,8 +11,37 @@ Usage:
 import argparse
 import os
 import smtplib
+import socket
 import sys
 from email.mime.text import MIMEText
+
+
+class _IPv6PreferredSMTP(smtplib.SMTP):
+    """SMTP subclass that tries IPv6 before IPv4, for IPv6-only CCR environments."""
+    def _get_socket(self, host, port, timeout):
+        err = None
+        for af in (socket.AF_INET6, socket.AF_INET, socket.AF_UNSPEC):
+            try:
+                addrs = socket.getaddrinfo(host, port, af, socket.SOCK_STREAM)
+            except socket.gaierror:
+                continue
+            for res in addrs:
+                af_, socktype, proto, _, sa = res
+                sock = None
+                try:
+                    sock = socket.socket(af_, socktype, proto)
+                    if timeout is not smtplib._GLOBAL_DEFAULT_TIMEOUT:
+                        sock.settimeout(timeout)
+                    sock.connect(sa)
+                    return sock
+                except OSError as e:
+                    err = e
+                    if sock is not None:
+                        try:
+                            sock.close()
+                        except Exception:
+                            pass
+        raise err if err is not None else OSError("No SMTP addresses reachable")
 
 try:
     from dotenv import load_dotenv
@@ -49,7 +78,7 @@ def main():
     msg["To"] = args.to
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with _IPv6PreferredSMTP("smtp.gmail.com", 587) as server:
             server.ehlo()
             server.starttls()
             server.login(user, password)

@@ -7,18 +7,40 @@ Usage:
   python3 tools/send_email.py --subject "Subject" --body "Body text"
   python3 tools/send_email.py --subject "Subject" --body-file /tmp/email.txt
   echo "Body" | python3 tools/send_email.py --subject "Subject"
+
+Network notes:
+  - Tries STARTTLS on port 587 first, falls back to SSL on port 465.
+  - Prefers IPv6 sockets to work in IPv6-only environments (e.g. CCR cloud).
+  - Avoids smtplib private attributes (_GLOBAL_DEFAULT_TIMEOUT) that differ
+    across Python versions by using isinstance() to detect real timeouts.
 """
 import argparse
 import os
 import smtplib
 import socket
+import ssl
 import sys
 from email.mime.text import MIMEText
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-class _IPv6PreferredSMTP(smtplib.SMTP):
-    """SMTP subclass that tries IPv6 before IPv4, for IPv6-only CCR environments."""
+
+class _RobustSMTP(smtplib.SMTP):
+    """SMTP that connects IPv6-first, avoiding smtplib private-sentinel access."""
+
     def _get_socket(self, host, port, timeout):
+        # smtplib passes its internal sentinel object as `timeout` when no
+        # timeout was set.  That sentinel is a private attribute that does NOT
+        # exist on the smtplib module in all Python builds, so we must NOT
+        # compare against it by name.  Use isinstance instead: a real caller-
+        # supplied timeout will be int or float; anything else (sentinel, None)
+        # means "leave the socket in its default (blocking) mode".
+        real_timeout = timeout if isinstance(timeout, (int, float)) else None
+
         err = None
         for af in (socket.AF_INET6, socket.AF_INET, socket.AF_UNSPEC):
             try:
@@ -30,8 +52,8 @@ class _IPv6PreferredSMTP(smtplib.SMTP):
                 sock = None
                 try:
                     sock = socket.socket(af_, socktype, proto)
-                    if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
-                        sock.settimeout(timeout)
+                    if real_timeout is not None:
+                        sock.settimeout(real_timeout)
                     sock.connect(sa)
                     return sock
                 except OSError as e:
@@ -41,13 +63,37 @@ class _IPv6PreferredSMTP(smtplib.SMTP):
                             sock.close()
                         except Exception:
                             pass
-        raise err if err is not None else OSError("No SMTP addresses reachable")
+        raise err if err is not None else OSError("No reachable SMTP address found")
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
+
+class _RobustSMTP_SSL(smtplib.SMTP_SSL, _RobustSMTP):
+    """SSL/TLS variant with the same IPv6-first socket logic (port 465)."""
     pass
+
+
+def _send(user, password, msg):
+    """Try port 587 STARTTLS, fall back to port 465 SSL. Returns error string or None."""
+    # Attempt 1: STARTTLS on 587
+    try:
+        with _RobustSMTP("smtp.gmail.com", 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(user, password)
+            server.send_message(msg)
+        return None  # success
+    except Exception as e587:
+        pass
+
+    # Attempt 2: SSL on 465
+    try:
+        ctx = ssl.create_default_context()
+        with _RobustSMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+            server.login(user, password)
+            server.send_message(msg)
+        return None  # success
+    except Exception as e465:
+        return f"587 error: {e587!r} | 465 error: {e465!r}"
 
 
 def main():
@@ -77,16 +123,12 @@ def main():
     msg["From"] = user
     msg["To"] = args.to
 
-    try:
-        with _IPv6PreferredSMTP("smtp.gmail.com", 587) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(user, password)
-            server.send_message(msg)
-        print(f"Email sent: {args.subject}")
-    except Exception as e:
-        print(f"ERROR sending email: {e}", file=sys.stderr)
+    error = _send(user, password, msg)
+    if error:
+        print(f"ERROR sending email: {error}", file=sys.stderr)
         sys.exit(1)
+
+    print(f"Email sent: {args.subject}")
 
 
 if __name__ == "__main__":

@@ -51,7 +51,6 @@ Using bars data from Step 7, compute for SPY first, then for each held and unive
 ```
 bars          = get_bars output (oldest → newest)
 close_today   = bars[-1]["close"]
-close_yesterday = bars[-2]["close"]
 close_10d_ago = bars[-11]["close"]
 sma_20        = mean of last 20 closes
 
@@ -63,9 +62,12 @@ Trend = BULLISH if close_today > sma_20, else BEARISH
 RS    = POSITIVE if RS_spread > 0%, NEUTRAL if -1% to 0%, NEGATIVE if < -1%
 ```
 
-**For held positions:** Flag any where Trend = BEARISH or RS = NEGATIVE as soft-exit candidates. Queue sell intents for execution routine if either condition holds.
+**For held positions:**
+- Trend = BEARISH → flag as soft-exit candidate; queue sell intent for execution routine.
+- RS = NEGATIVE (single session) → flag as WATCH in journal; do NOT queue sell yet.
+- RS = NEGATIVE for 2 consecutive sessions → flag as soft-exit candidate; queue sell intent. (Check prior EOD journal or last-session.md to confirm prior session's RS was also NEGATIVE before queuing.)
 
-**For universe tickers:** Tickers eligible for new entry = Trend BULLISH AND RS POSITIVE AND open positions < 8. Rank by RS_spread descending.
+**For universe tickers:** Tickers eligible for new entry = Trend BULLISH AND RS POSITIVE AND open positions < 6 AND cash after trade ≥ 25% equity. Rank by RS_spread descending.
 
 Write the signal table in your journal entry (see state/strategy.md for the table format).
 
@@ -77,8 +79,8 @@ Form your trading views for today using the signal outputs from Step 7b. Require
 - **New buys:** Only from Step 7b's eligible list (Trend BULLISH + RS POSITIVE). If no tickers qualify, hold cash — do not force entries.
 - **Soft exits:** Any held position flagged in Step 7b (Trend BEARISH or RS NEGATIVE) → add sell intent for execution routine.
 - **Hard stops:** Any position with loss ≥ 8% → already queued from Step 6; confirm here.
-- **Sizing:** Default 5% of equity. Up to 7% only if RS_spread > 3% AND ticker up >1% today — document the reason. Never exceed 10%.
-- **Position count:** Do not add new positions if already at 5 or more open. Do not open new positions if cash would fall below 25%.
+- **Sizing:** Default 5% of equity. Up to 7% only if RS_spread > 3% AND close_today > close_yesterday by >1% (use bars[-1] and bars[-2]) — document the reason. Never exceed 10%.
+- **Position count:** Target 4–6 concurrent positions (strategy preference). Do not exceed 6 unless all signals are unusually strong; hard max is 8 (enforced by validator). Do not open new positions if cash would fall below 25%.
 - If changing a prior stated position (from journals), explicitly write why.
 - Do not form intents that contradict the LEARNED BEHAVIORS in CLAUDE.md without justifying the exception.
 - Week 1: Only QQQ is eligible for new positions (holding SPY cannot beat SPY).

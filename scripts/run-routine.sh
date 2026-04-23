@@ -44,6 +44,12 @@ PROMPT_CONTENT=$(cat "$PROMPT_FILE")
 
 export CURRENT_ROUTINE="$ROUTINE"
 
-# Pass additional args (e.g. --model)
+# In CI (GitHub Actions), skip interactive permission prompts
+CI_FLAGS=()
+if [ "${CI:-}" = "true" ]; then
+  CI_FLAGS+=(--dangerously-skip-permissions)
+fi
+
+# Pass additional args (e.g. --model) plus CI flags
 shift
-exec claude -p "$@" "$PROMPT_CONTENT"
+exec claude -p "${CI_FLAGS[@]}" "$@" "$PROMPT_CONTENT"

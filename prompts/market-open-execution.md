@@ -69,14 +69,16 @@ git push
 If push fails, log the error to notes-for-operator.md.
 
 ### Step 12 — Email summary
-Send an email via Gmail to motivationmaven89@gmail.com:
-- **Subject:** `Trading Agent Execution — YYYY-MM-DD`
-- **Body (terse bullets):**
-  - Orders placed: [ticker | side | qty | order_id]
-  - Orders rejected: [ticker | rule violated]
-  - Stop-loss sells executed: [list or "none"]
-  - Equity after execution: $X | Cash: X% | Positions: N
-  - Errors or operator notes: [any tool errors or notes-for-operator entries]
+Write the email body to /tmp/trading_email.txt, then run:
+```
+python3 tools/send_email.py --subject "Trading Agent Execution — YYYY-MM-DD" --body-file /tmp/trading_email.txt
+```
+Body (terse bullets):
+- Orders placed: [ticker | side | qty | order_id]
+- Orders rejected: [ticker | rule violated]
+- Stop-loss sells executed: [list or "none"]
+- Equity after execution: $X | Cash: X% | Positions: N
+- Errors or operator notes: [any tool errors or notes-for-operator entries]
 
 ---
 Rules: If any tool returns an error, log to notes-for-operator.md and STOP. Do not retry. Do not improvise.

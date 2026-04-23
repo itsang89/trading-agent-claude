@@ -125,14 +125,16 @@ git push
 If push fails, log the error to notes-for-operator.md.
 
 ### Step 11 — Email summary
-Send an email via Gmail to motivationmaven89@gmail.com:
-- **Subject:** `Trading Agent Weekly Review — Week N (YYYY-MM-DD)`
-- **Body (terse bullets):**
-  - Week return: X% | vs SPY: X%
-  - Trades placed / rejected / stopped
-  - Top behavioral patterns observed
-  - Rules extracted: N new durable rules
-  - Next week posture: [brief]
-  - Errors or operator notes: [any tool errors or notes-for-operator entries]
+Write the email body to /tmp/trading_email.txt, then run:
+```
+python3 tools/send_email.py --subject "Trading Agent Weekly Review — Week N (YYYY-MM-DD)" --body-file /tmp/trading_email.txt
+```
+Body (terse bullets):
+- Week return: X% | vs SPY: X%
+- Trades placed / rejected / stopped
+- Top behavioral patterns observed
+- Rules extracted: N new durable rules
+- Next week posture: [brief]
+- Errors or operator notes: [any tool errors or notes-for-operator entries]
 
 Rules: If any tool returns an error, log to notes-for-operator.md and STOP.

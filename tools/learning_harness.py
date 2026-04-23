@@ -1,28 +1,24 @@
 #!/usr/bin/env python3
 """
-learning_harness.py — Extract weekly behavioral lessons and update CLAUDE.md.
+learning_harness.py — Manual fallback for lesson extraction.
 
-Run manually by the operator after the Friday weekly-review routine:
+The weekly-review routine (make run-weekly) now performs lesson extraction
+directly as Step 9 and writes the LEARNED BEHAVIORS block itself.
+
+Only run this script manually if the Friday weekly-review routine failed to
+complete Step 9 (e.g. the session was interrupted before lesson extraction).
+
     python3 tools/learning_harness.py
 
-What it does:
-  1. Reads this week's journal entries, behavioral flags, and metrics
-  2. Calls Claude API to extract durable, actionable rules
-  3. Updates the LEARNED BEHAVIORS section of CLAUDE.md (delimited by markers)
-  4. Writes a weekly lessons file to learnings/YYYY-WW.md
-  5. Appends an audit row to logs/learning-harness.jsonl
-
-The operator should review the changes to CLAUDE.md (git diff) before the next session.
+No ANTHROPIC_API_KEY required — delegates to the local `claude` CLI.
 """
 import hashlib
 import json
 import os
+import subprocess
 import sys
-import tempfile
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-
-import pytz
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _CLAUDE_MD = _REPO_ROOT / "CLAUDE.md"
@@ -35,13 +31,6 @@ _CONFIG_PATH = _REPO_ROOT / "state" / "experiment-config.json"
 
 _START_MARKER = "<!-- LEARNED_BEHAVIORS:START -->"
 _END_MARKER = "<!-- LEARNED_BEHAVIORS:END -->"
-
-_ET = pytz.timezone("America/New_York")
-
-
-def _load_env():
-    from dotenv import load_dotenv
-    load_dotenv(_REPO_ROOT / ".env")
 
 
 def _get_week_number() -> int:
@@ -154,13 +143,6 @@ If you find no new durable rules this week, respond with exactly the word: NO_NE
 Do not add any commentary, preamble, or explanation outside the rule list and headers."""
 
 
-def _parse_rules_from_response(response_text: str) -> str:
-    """Return the rules text as-is — already formatted for CLAUDE.md insertion."""
-    if response_text.strip() == "NO_NEW_RULES":
-        return None
-    return response_text.strip()
-
-
 def _update_claude_md(new_rules_text: str) -> tuple[str, str]:
     """
     Replace the LEARNED_BEHAVIORS block in CLAUDE.md with new_rules_text.
@@ -190,14 +172,30 @@ def _update_claude_md(new_rules_text: str) -> tuple[str, str]:
     return hash_before, hash_after
 
 
-def _write_learnings_file(week: int, rules_text: str, input_tokens: int, output_tokens: int):
+def _call_claude_cli(prompt: str, model: str = "claude-sonnet-4-6") -> str:
+    """Invoke `claude --print` as a subagent and return the response text."""
+    result = subprocess.run(
+        ["claude", "--print", "--model", model],
+        input=prompt,
+        capture_output=True,
+        text=True,
+        cwd=str(_REPO_ROOT),
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"claude CLI exited {result.returncode}:\n{result.stderr.strip()}"
+        )
+    return result.stdout.strip()
+
+
+def _write_learnings_file(week: int, rules_text: str):
     """Write learnings/YYYY-WW.md with the extracted rules."""
     today = date.today()
     iso_week = today.isocalendar()[1]
     filename = _LEARNINGS_DIR / f"{today.year}-W{iso_week:02d}-week{week}.md"
     content = f"""# Learnings — Week {week} ({today.isoformat()})
 
-Extracted by learning_harness.py | Tokens: {input_tokens} in / {output_tokens} out
+Extracted by learning_harness.py (via claude CLI)
 
 ---
 
@@ -214,16 +212,6 @@ def _append_audit_log(entry: dict):
 
 
 def main():
-    _load_env()
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("ERROR: ANTHROPIC_API_KEY not set in .env", file=sys.stderr)
-        sys.exit(1)
-
-    import anthropic
-    client = anthropic.Anthropic(api_key=api_key)
-
     week = _get_week_number()
     print(f"Learning harness — Week {week}")
     print("Reading journals, flags, and metrics...")
@@ -239,43 +227,12 @@ def main():
 
     prompt = _build_extraction_prompt(week, journals, flags, metrics, existing_rules)
 
-    print("Calling Claude API for rule extraction...")
-
-    # Use prompt caching on the journal corpus (largest and most static part)
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"## Week {week} journal entries\n{journals}",
-                        "cache_control": {"type": "ephemeral"},
-                    },
-                    {
-                        "type": "text",
-                        "text": (
-                            f"## Week {week} behavioral flags\n{flags}\n\n"
-                            f"## Metrics\n{metrics}\n\n"
-                            f"## Existing rules\n{existing_rules}\n\n"
-                            "## Instructions\n" + _build_extraction_prompt(
-                                week, "", flags, metrics, existing_rules
-                            ).split("## Instructions\n", 1)[-1]
-                        ),
-                    },
-                ],
-            }
-        ],
-    )
-
-    rules_text = response.content[0].text.strip()
-    input_tokens = response.usage.input_tokens
-    output_tokens = response.usage.output_tokens
-    cache_read = getattr(response.usage, "cache_read_input_tokens", 0)
-
-    print(f"  API response: {input_tokens} in / {output_tokens} out / {cache_read} cache read")
+    print("Invoking claude CLI for rule extraction...")
+    try:
+        rules_text = _call_claude_cli(prompt)
+    except RuntimeError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
 
     if rules_text == "NO_NEW_RULES":
         print("No new durable rules found this week.")
@@ -286,31 +243,21 @@ def main():
             "rules_added": 0,
             "no_new_rules": True,
             "model": "claude-sonnet-4-6",
-            "input_tokens": input_tokens,
-            "cache_read_tokens": cache_read,
-            "output_tokens": output_tokens,
         })
         return
 
-    # Count rules extracted
     rule_count = rules_text.count(f"[W{week}|")
 
-    # Write learnings file
-    learnings_file = _write_learnings_file(week, rules_text, input_tokens, output_tokens)
+    learnings_file = _write_learnings_file(week, rules_text)
     print(f"  Learnings written to: {learnings_file.name}")
 
-    # Build the new full LEARNED_BEHAVIORS block
-    # Preserve existing rules from prior weeks, append new ones
     prior_rules = existing_rules if "(No existing" not in existing_rules else ""
-
     full_block = ""
     if prior_rules:
-        # Remove sections that the new rules will overwrite, keep prior-week rules
         full_block += prior_rules.strip() + "\n\n---\n\n"
     full_block += f"*Week {week} lessons added {date.today().isoformat()} by learning_harness.py*\n\n"
     full_block += rules_text
 
-    # Update CLAUDE.md
     hash_before, hash_after = _update_claude_md(full_block)
     print(f"  CLAUDE.md updated (md5: {hash_before[:8]} → {hash_after[:8]})")
     print(f"  {rule_count} new rule(s) added.")
@@ -322,16 +269,13 @@ def main():
         "rules_added": rule_count,
         "no_new_rules": False,
         "model": "claude-sonnet-4-6",
-        "input_tokens": input_tokens,
-        "cache_read_tokens": cache_read,
-        "output_tokens": output_tokens,
         "claude_md_hash_before": hash_before,
         "claude_md_hash_after": hash_after,
         "learnings_file": learnings_file.name,
     })
 
     print("\nDone. Review CLAUDE.md changes before next session:")
-    print("  git diff CLAUDE.md   (if git is initialized)")
+    print("  git diff CLAUDE.md")
     print(f"  cat {learnings_file}")
 
 

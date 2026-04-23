@@ -145,9 +145,9 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 4. Stop-losses are yours to manage. Check every position every routine. Place market-sell if loss ≥8%.
 5. Tool error → log it, stop the routine. Do not retry or improvise.
 6. Market closed → exit immediately. No "pre-positioning" orders.
-7. Never modify `INSTRUCTIONS.md`, `CLAUDE.md`, `MEMORY.md`, `.env`, `.gitignore`, or `tools/` during a routine. Write concerns to `notes-for-operator.md`.
+7. Never modify `INSTRUCTIONS.md`, `CLAUDE.md`, `MEMORY.md`, `.env`, `.gitignore`, or `tools/` during a routine — **except**: the `weekly-review` routine MUST update the `<!-- LEARNED_BEHAVIORS:START/END -->` block in `CLAUDE.md` as its final step. No other part of `CLAUDE.md` may be touched.
 8. Never attempt to place an order for a ticker not in `state/universe.json`.
-9. **You do not learn automatically across sessions.** Writing reflections is logging. The operator runs `tools/learning_harness.py` weekly to extract lessons and fold them into the LEARNED BEHAVIORS section below. When you see rules there, treat them as operator-endorsed constraints with the same weight as the hard limits above. You did not write them — the harness extracted them from your own past behavior.
+9. **You do not learn automatically across sessions.** Writing reflections is logging. The `weekly-review` routine extracts lessons at the end of each Friday session and writes them directly into the LEARNED BEHAVIORS section below. When you see rules there, treat them as operator-endorsed constraints with the same weight as the hard limits above.
 10. Keep journal entries terse. Bullets and numbers. Minimize token use.
 
 ---
@@ -185,7 +185,7 @@ Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.m
 <!-- LEARNED_BEHAVIORS:START -->
 ## Learned Behaviors
 
-*Updated weekly by `tools/learning_harness.py` after each Friday review. Operator-reviewed before each new week begins. Do not edit manually — changes will be overwritten by the harness.*
+*Updated by the `weekly-review` routine at the end of each Friday session. Operator reviews via `git diff CLAUDE.md` before the next week begins. Do not edit manually — changes will be overwritten by the next weekly-review.*
 
 *No lessons yet — experiment has not started. This section will be populated after Week 1.*
 

@@ -58,11 +58,59 @@ Required sections:
 ### Step 8 — Update last-session.md
 Write state/last-session.md with end-of-week state.
 
-### Step 9 — Learning harness trigger
-At the end of your journal entry, write the following line exactly:
-`HARNESS_READY: Operator should run 'make run-learning-harness' to extract this week's lessons into CLAUDE.md`
+### Step 9 — Extract behavioral lessons and update CLAUDE.md
 
-Do NOT run the harness yourself. The operator reviews the weekly journal first, then runs the harness manually.
+Read CLAUDE.md's current `<!-- LEARNED_BEHAVIORS:START -->` block so you do not duplicate existing rules.
+
+Extract 2–8 NEW behavioral rules from this week's journals, flags, and metrics. Each rule must be:
+1. **Durable** — applies in future weeks, not just this one
+2. **Actionable** — a future session knows exactly what to do differently
+3. **Evidence-based** — cite a specific log event as the source
+4. **Scoped** — one rule = one behavior, no compound rules
+
+Do NOT extract rules about specific price levels, current macro conditions, or anything already in the existing rules block.
+
+**Rule format — use exactly this format:**
+```
+- [W{N}|CONFIDENCE] Rule text here.
+  Source: One sentence citing the specific log event.
+```
+
+CONFIDENCE: HIGH (3+ entries/flags) · MEDIUM (1–2 times, clear pattern) · LOW (single instance, provisional)
+
+Organize under headers:
+```
+### Sizing and Risk
+### Execution Patterns
+### Market Regime Awareness
+### Behavioral Failure Modes
+```
+
+If you find no new durable rules this week, write `*No new durable rules this week.*` in the block.
+
+**Write the updated block:** Replace everything between `<!-- LEARNED_BEHAVIORS:START -->` and `<!-- LEARNED_BEHAVIORS:END -->` in CLAUDE.md with:
+```
+## Learned Behaviors
+
+*Updated by the `weekly-review` routine at the end of each Friday session. Operator reviews via `git diff CLAUDE.md` before the next week begins. Do not edit manually — changes will be overwritten by the next weekly-review.*
+
+{prior weeks' rules, preserved verbatim}
+
+---
+
+*Week {N} lessons added {date} by weekly-review routine*
+
+{new rules block}
+```
+
+Do not touch any other part of CLAUDE.md.
+
+Also write a learnings summary to: `learnings/{YYYY}-W{WW}-week{N}.md` with the extracted rules and one sentence of context per rule.
+
+Append an audit line to `logs/learning-harness.jsonl`:
+```json
+{"date": "YYYY-MM-DD", "week": N, "rules_extracted": K, "source": "weekly-review-routine"}
+```
 
 ---
 

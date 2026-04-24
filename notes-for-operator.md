@@ -199,3 +199,10 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 5. Consider pruning the extra 4/23 row in `metrics/daily-metrics.csv` to keep downstream aggregations honest.
 
 **EMAIL TOOL ERROR — weekly-review routine:** Will attempt at end of routine; expected to fail again (SENDGRID_API_KEY not set). Routine proceeds per new learned behavior rule #4.
+
+**PUSH FAILURE — weekly-review routine:**
+- Attempted `git push origin HEAD:main` per CLAUDE.md routine instructions → HTTP 403 "Permission to itsang89/trading-agent-claude.git denied to itsang89" via local proxy (http://127.0.0.1:36359/git/...).
+- Fallback `git push -u origin claude/vigilant-edison-AOmrc` → same 403.
+- Commit `d8180cf weekly-review: 2026-04-24` created locally but **NOT pushed**.
+- This differs from prior routines this week (all EOD/pre-market/execution pushes on 4/23 and 4/24 succeeded to main). Operator should check credential/permission state on the local_proxy.
+- Routine continued to email step per "do not block on push failure" discretion. If operator wants the routine to hard-stop on push failure instead, update CLAUDE.md rule #5 scope.

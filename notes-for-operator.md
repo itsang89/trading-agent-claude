@@ -176,3 +176,26 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - Portfolio: $10,000 cash, 0 positions. No stop-loss checks required.
 - All files committed and pushed.
 - EMAIL TOOL ERROR: send_email.py likely failed again (recurring smtplib issue logged at [2026-04-23 ~16:30 ET]). Email summary not sent.
+
+---
+
+## [2026-04-24 ~17:00 ET — Weekly Review Routine]
+
+**WEEKLY REVIEW COMPLETED — Week 1 (Pre-Experiment)**
+- Experiment has not yet started (start date 2026-04-27). Week covered only Thu 4/23 and Fri 4/24.
+- 0 trades placed, 0 rejected, 0 stop-losses, 0 behavioral flags. Equity flat at $10,000.
+- vs SPY: agent 0.00% vs SPY +0.78% over the 2-day window (expected — pre-experiment).
+- Journal written: `journal/2026-04-24-weekly.md`.
+- last-session.md updated with Monday (experiment day 1) posture.
+- **4 new LEARNED BEHAVIORS added to CLAUDE.md** — 2 HIGH-confidence, 2 MEDIUM-confidence. All operational/epistemic (no trading-skill rules yet).
+- Learnings summary: `learnings/2026-W17-week1.md`.
+- Learning-harness entry appended: `{"date": "2026-04-24", "week": 1, "rules_extracted": 4, ...}`.
+
+**OPEN OPERATOR ITEMS (carry-forward):**
+1. Set `SENDGRID_API_KEY` in environment (email is currently a dead channel — 6/6 routines this week failed to send).
+2. Resolve `append_metrics.py` double-write (EOD prompt vs Makefile both invoke it → duplicate row for 2026-04-23).
+3. Review `universe-proposal.md` and lock `state/universe.json` before Week 2 (deadline 2026-05-04).
+4. Update `current_week` in `state/experiment-config.json` on Monday if the convention is 1-based-from-start.
+5. Consider pruning the extra 4/23 row in `metrics/daily-metrics.csv` to keep downstream aggregations honest.
+
+**EMAIL TOOL ERROR — weekly-review routine:** Will attempt at end of routine; expected to fail again (SENDGRID_API_KEY not set). Routine proceeds per new learned behavior rule #4.

@@ -187,7 +187,25 @@ Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.m
 
 *Updated by the `weekly-review` routine at the end of each Friday session. Operator reviews via `git diff CLAUDE.md` before the next week begins. Do not edit manually — changes will be overwritten by the next weekly-review.*
 
-*No lessons yet — experiment has not started. This section will be populated after Week 1.*
+*Week 1 was pre-experiment (experiment start 2026-04-27). Rules below were extracted from operational discipline observed on 2026-04-23 and 2026-04-24, the only two routine-run days of the week. No trading-skill rules yet — only operational and epistemic hygiene.*
+
+### Execution Patterns
+
+- [W1|HIGH] When multiple files disagree on a date or config value, treat `state/experiment-config.json` as authoritative. `state/last-session.md` is a handoff note, not config — do not rely on it for hard dates (experiment start, end, capital, week number). Flag the discrepancy in the current journal and proceed with the config-file value.
+  Source: 2026-04-23 pre-market journal corrected the prior session's "experiment starts 2026-04-28" against experiment-config.json's authoritative 2026-04-27.
+
+- [W1|MEDIUM] Minor inter-session drift in continuous signals (e.g., RS_spread +2.72% → +2.58%, SMA a few cents) is data refresh, not a contradiction. Only escalate to a contradiction check if the signal crosses a decision threshold (0% for RS entry, −1% for RS exit warning, 3% for high-conviction). Acknowledge the drift in one line and move on; do not re-derive the prior intent.
+  Source: 2026-04-24 pre-market journal handled QQQ RS_spread drift from +2.72% (4/23) to +2.58% (4/24) correctly as "rounding/data refresh" without escalating as a contradiction.
+
+### Market Regime Awareness
+
+- [W1|MEDIUM] When `get_bars <TICKER> 20` returns fewer than 20 bars, compute SMA on what is available and **label the proxy explicitly in the signal table** (e.g., write `SMA_14`, not `SMA_20`). Do not silently substitute. On the first session where ≥20 bars are returned for a ticker, switch to full SMA_20 immediately and note the switch in that day's pre-market journal. If the close is within ~2% of the proxy SMA, treat the trend signal as BORDERLINE and prefer not to open a new position on proxy data alone.
+  Source: 2026-04-23 and 2026-04-24 pre-market journals both used SMA_14 as an SMA_20 proxy because `get_bars` returned only 14 bars; trend signal was robust because close was >> SMA, but the proxy was correctly labeled and not silently assumed equivalent.
+
+### Behavioral Failure Modes
+
+- [W1|HIGH] `tools/send_email.py` is unreliable — it failed in all 6 routine runs this week across three distinct error modes (IPv6, smtplib compat, missing SendGrid key). Treat email delivery as a best-effort non-blocking side channel: attempt once at the end of the routine, log any failure to `notes-for-operator.md`, and continue. Never retry email within the same routine, never block journal writing / state updates / git commit on email success, and never create an `operator-flag` in the weekly journal solely for email failure.
+  Source: `notes-for-operator.md` entries on 2026-04-23 (×3) and 2026-04-24 (×3) document 6 consecutive email failures; every routine nonetheless committed successfully.
 
 <!-- LEARNED_BEHAVIORS:END -->
 

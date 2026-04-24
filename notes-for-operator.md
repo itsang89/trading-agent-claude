@@ -122,6 +122,21 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 
 ---
 
+## [2026-04-24 ~8:41 ET — Pre-Market Routine]
+
+**PRE-MARKET ROUTINE COMPLETED — 2026-04-24**
+- Equity: $10,000.00 | Cash: 100% | Positions: 0
+- No orders placed. Pre-experiment gate (start_date: 2026-04-27) applies.
+- QQQ signals revalidated (4/23 close): Trend BULLISH ($651.40 > SMA_14 $626.73), RS_spread +2.58% (POSITIVE).
+- Monday intent: BUY QQQ 5% (~$500) if signals hold at 2026-04-27 pre-market.
+- Committed and pushed to main (commit: pre-market: 2026-04-24).
+
+**EMAIL TOOL ERROR — pre-market-research routine:**
+- `tools/send_email.py` failed: SENDGRID_API_KEY not set in environment.
+- Email summary not sent. Set SENDGRID_API_KEY in .env to enable email delivery.
+
+---
+
 ## [2026-04-23 ~15:46 ET]
 
 **EXECUTION ROUTINE — no orders placed**

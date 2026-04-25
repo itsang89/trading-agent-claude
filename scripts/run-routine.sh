@@ -40,6 +40,17 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $ROUTINE" > "$LOCK_FILE"
 # Cleanup lock on exit
 trap 'rm -f "$LOCK_FILE"' EXIT
 
+# Set authenticated remote URL so pushes never rely on the local proxy.
+# The local_proxy issues read-only tokens for some sessions; GITHUB_TOKEN
+# is always write-capable. Do this here (not in the prompt) so Claude
+# cannot skip it.
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  git -C "$REPO_ROOT" remote set-url origin \
+    "https://x-access-token:${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git"
+else
+  echo "WARNING: GITHUB_TOKEN not set — git push may fail if local proxy is read-only." >&2
+fi
+
 PROMPT_CONTENT=$(cat "$PROMPT_FILE")
 
 export CURRENT_ROUTINE="$ROUTINE"

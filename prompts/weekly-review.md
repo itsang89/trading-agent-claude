@@ -123,7 +123,6 @@ Week 4 additional task: Write retrospective.md with full experiment summary per 
 ```
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"
-git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ learnings/ CLAUDE.md notes-for-operator.md
 git commit -m "weekly-review: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push origin HEAD:main

@@ -62,7 +62,6 @@ Write state/last-session.md (full overwrite) with EOD state, near-stop warnings,
 ```
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"
-git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ metrics/ notes-for-operator.md
 git commit -m "eod: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push origin HEAD:main

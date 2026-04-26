@@ -1,12 +1,22 @@
 {
-  "status": "WEEK_1_STUB",
-  "locked": false,
-  "note": "Full universe pending operator review and lock. Week-1 trading restricted to SPY and QQQ only.",
-  "tickers": ["SPY", "QQQ"],
+  "status": "LOCKED",
+  "locked": true,
+  "note": "Full universe locked by operator on 2026-04-26. SPY is benchmark only — cannot be held as a position.",
+  "tickers": ["QQQ", "XLV", "XLE", "NVDA", "MSFT", "AAPL", "GOOGL", "META", "LLY", "JPM", "BRK.B", "AMZN"],
   "sector_map": {
-    "SPY": "ETF",
-    "QQQ": "ETF"
+    "QQQ": "ETF",
+    "XLV": "ETF",
+    "XLE": "ETF",
+    "NVDA": "Information Technology",
+    "MSFT": "Information Technology",
+    "AAPL": "Information Technology",
+    "GOOGL": "Communication Services",
+    "META": "Communication Services",
+    "LLY": "Health Care",
+    "JPM": "Financials",
+    "BRK.B": "Financials",
+    "AMZN": "Consumer Discretionary"
   },
-  "locked_at": null,
-  "proposed_at": null
+  "locked_at": "2026-04-26",
+  "proposed_at": "2026-04-23"
 }

@@ -1,85 +1,64 @@
 # Last Session Summary
 
-**Written by:** pre-market-research
+**Written by:** market-open-execution
 **Date:** 2026-04-27 (Monday — Experiment Day 1)
-**Time (ET):** ~8:45 AM ET
-**Week number:** 1 (experiment started — first live trading day)
+**Time (ET):** ~9:47 AM ET
+**Week number:** 1
 
 ---
 
-## Portfolio State
+## Portfolio State (post-execution estimates)
 
-- Equity: $10,000.00
-- Cash: $10,000.00 (100% — no positions yet)
-- Positions held: 0
-- Buying power: $20,000.00
-- Cumulative P&L: $0.00 (0.00%)
-- vs SPY cumulative: Agent 0.00% vs SPY +0.39% (SPY start_price 711.20, last close 713.97)
+- Equity: ~$10,000 (actuals pending fills)
+- Cash: ~$7,016 (~70.2% — 6 positions deployed)
+- Positions held: 6
+- Cumulative P&L: ~$0 (Day 1, fills just submitted)
+- vs SPY cumulative: pending EOD data
 
 ## Open Positions
 
-None.
+| Ticker | Qty | Est. Entry | Est. Value | % of Portfolio |
+|--------|-----|-----------|------------|----------------|
+| MSFT | 1.18 | ~$422.00 | ~$498 | ~5% |
+| AMZN | 1.91 | ~$261.00 | ~$499 | ~5% |
+| NVDA | 2.38 | ~$209.59 | ~$499 | ~5% |
+| QQQ | 0.75 | ~$661.99 | ~$496 | ~5% |
+| GOOGL | 1.44 | ~$346.10 | ~$498 | ~5% |
+| META | 0.73 | ~$676.20 | ~$494 | ~5% |
+
+Order IDs:
+- MSFT: 2b620530-e485-4f7d-921c-21ba99bd5042
+- AMZN: f605e2ef-8b19-4314-a693-36f43017e14d
+- NVDA: bae2f510-0e5c-42df-b028-f843af72ce6f
+- QQQ: b9e2029b-ca75-4f89-89c7-e6cd15c695a0
+- GOOGL: 3c3f5d2d-8a34-426e-9ba7-e05b6c67f374
+- META: 517a64e6-8e97-4476-95d7-fba52dd510c9
 
 ## Near-Stop Warnings
 
-None.
+None at open. Monitor at EOD:
+- Stop-loss threshold for each: loss ≥ 8% from avg_entry
+- MSFT stop: ~$388.24 | AMZN: ~$240.12 | NVDA: ~$192.82 | QQQ: ~$608.55 | GOOGL: ~$318.41 | META: ~$622.10
 
-## Today's Signal Summary
+## Signal Status at Execution
 
-SPY benchmark 10d_ROC: +5.097% (SMA_13 proxy — 13 bars available)
-
-| Ticker | Close | Trend | RS_spread | Eligible |
-|--------|-------|-------|-----------|----------|
-| MSFT | $424.59 | BULLISH | +9.38% | YES |
-| AMZN | $263.96 | BULLISH | +5.61% | YES |
-| NVDA | $208.18 | BULLISH | +5.28% | YES |
-| QQQ | $663.92 | BULLISH | +3.54% | YES |
-| GOOGL | $344.33 | BULLISH | +3.43% | YES |
-| META | $674.93 | BULLISH | +2.06% | YES (6th, optional) |
-| AAPL | $271.04 | BULLISH | −1.02% | NO (RS NEGATIVE) |
-| LLY | $884.02 | BEARISH | −10.98% | NO |
-| JPM | $308.27 | BEARISH | −5.61% | NO |
-| BRK.B | $469.32 | BEARISH | −7.31% | NO |
-| XLV | $144.20 | BEARISH | −7.22% | NO |
-| XLE | $56.89 | BULLISH | −5.18% | NO (RS NEGATIVE) |
-
-## Execution Intents for 9:45 AM
-
-Queue for market-open-execution (9:45 AM ET today):
-
-1. BUY MSFT — 5% of equity (~$500, ~1.18 shares) — RS_spread +9.38%, high-conviction eligible
-2. BUY AMZN — 5% of equity (~$500, ~1.89 shares) — RS_spread +5.61%, high-conviction eligible
-3. BUY NVDA — 5% of equity (~$500, ~2.40 shares) — RS_spread +5.28%, high-conviction eligible
-4. BUY QQQ — 5% of equity (~$500, ~0.75 shares) — RS_spread +3.54%, high-conviction eligible
-5. BUY GOOGL — 5% of equity (~$500, ~1.45 shares) — RS_spread +3.43%, high-conviction eligible
-6. BUY META — 5% of equity (~$500, ~0.74 shares) — OPTIONAL, RS_spread +2.06% (standard)
-
-All: default 5% sizing. High-conviction upsize to 7% eligible for positions 1–5 IF execution routine reconfirms signals AND today's daily return > 1% at time of execution.
+- All 6 tickers: Trend BULLISH (above SMA_13), RS_spread POSITIVE
+- High-conviction upsize NOT applied — daily return < +1% for all tickers at 9:45 AM
+- No signal threshold crossings
 
 ## Key Decisions This Session
 
-- Universe is LOCKED (operator locked 2026-04-26). Full 12-ticker universe active from Day 1.
-- Full universe entry vs QQQ-only: operator lock resolves Week 1 "SPY/QQQ only while reviewing" restriction.
-- SMA_13 proxy in use (13 bars returned for 20-day request). All eligible tickers >2.5% above SMA_13 → robust trend signals.
-- Chose 5-position primary plan (top 5 by RS_spread) + optional 6th (META) to stay near 70% cash.
+- 6 positions opened on Day 1 (5 primary + META as optional 6th)
+- All at 5% default sizing (~$500 each)
+- High-conviction criteria not met at execution time (market opened flat/slightly negative vs Friday)
+- Fractional share orders confirmed working on Alpaca paper account
+- 0 stop-losses, 0 rejections, 0 tool errors
 
-## Contradictions or Open Questions
+## Notes for Next Session (end-of-day-review, 4:30 PM ET)
 
-1. SPY benchmark start_price = 711.2 per tool output; this is the 4/22 SPY close per bars data, not the 4/24 close (713.97) or today's open. The tool says experiment_started=true and latest_date=2026-04-24. Minor discrepancy in benchmark baseline initialization — flagged to operator in notes-for-operator.md. Will use the tool output as authoritative.
-2. Fractional share support: execution routine must confirm Alpaca paper account supports fractional quantities. If not, use whole-share floor (e.g., QQQ: 0 whole shares if price > $500, or 1 share = $664).
-
-## Flags This Session
-
-- 0 stop-losses
-- 0 behavioral flags
-- 0 tool errors
-
-## Notes for Next Session (market-open-execution, 9:45 AM ET)
-
-1. Read today's pre-market journal (journal/2026-04-27-pre-market.md).
-2. Re-run get_account, get_positions.
-3. Confirm: no stop-loss positions (there are none).
-4. Execute buy queue (items 1–5 above). Consider META as 6th.
-5. Revalidate high-conviction criteria at time of execution (not pre-market). Only upsize to 7% if RS_spread still > 3% AND today's early price vs yesterday's close > +1%.
-6. Log order confirmations and any rejections.
-7. Write journal/2026-04-27-execution.md.
+1. Call get_account, get_positions to get actual fill prices and current P&L.
+2. Check all 6 positions for stop-loss (loss ≥ 8%).
+3. Compute day P&L vs SPY benchmark.
+4. Note any positions approaching stop-loss (loss >5%).
+5. Write journal/2026-04-27-eod.md.
+6. RS_spread re-check: if any position shows RS_spread < −1% at EOD, flag for soft exit warning.

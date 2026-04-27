@@ -1,1 +1,7 @@
 date,time,ticker,side,qty,price,order_id,status,routine
+2026-04-27,09:47:13,MSFT,buy,1.18,,2b620530-e485-4f7d-921c-21ba99bd5042,OrderStatus.PENDING_NEW,
+2026-04-27,09:47:18,AMZN,buy,1.91,,f605e2ef-8b19-4314-a693-36f43017e14d,OrderStatus.PENDING_NEW,
+2026-04-27,09:47:23,NVDA,buy,2.38,,bae2f510-0e5c-42df-b028-f843af72ce6f,OrderStatus.PENDING_NEW,
+2026-04-27,09:47:27,QQQ,buy,0.75,,b9e2029b-ca75-4f89-89c7-e6cd15c695a0,OrderStatus.PENDING_NEW,
+2026-04-27,09:47:31,GOOGL,buy,1.44,,3c3f5d2d-8a34-426e-9ba7-e05b6c67f374,OrderStatus.PENDING_NEW,
+2026-04-27,09:47:38,META,buy,0.73,,517a64e6-8e97-4476-95d7-fba52dd510c9,OrderStatus.PENDING_NEW,

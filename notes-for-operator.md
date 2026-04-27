@@ -206,3 +206,22 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - Commit `d8180cf weekly-review: 2026-04-24` created locally but **NOT pushed**.
 - This differs from prior routines this week (all EOD/pre-market/execution pushes on 4/23 and 4/24 succeeded to main). Operator should check credential/permission state on the local_proxy.
 - Routine continued to email step per "do not block on push failure" discretion. If operator wants the routine to hard-stop on push failure instead, update CLAUDE.md rule #5 scope.
+
+---
+
+## [2026-04-27 ~8:45 ET — Pre-Market Routine]
+
+**PRE-MARKET ROUTINE COMPLETED — 2026-04-27 (Experiment Day 1)**
+- Equity: $10,000.00 | Cash: 100% | Positions: 0
+- Experiment has officially started. Full 12-ticker universe is active (operator locked 2026-04-26 — noted and applied).
+- 6 tickers eligible (MSFT, AMZN, NVDA, QQQ, GOOGL, META). 5 primary buy intents queued for execution at 9:45 AM.
+- No errors, no stop-losses, no behavioral flags.
+- All 13-bar proxies (SMA_13) in use — closes substantially above SMA_13 for all eligible tickers; signals robust.
+
+**SPY BENCHMARK START_PRICE NOTE:**
+- `get_spy_benchmark.py` returns start_price=711.20, start_date=2026-04-27, latest_date=2026-04-24.
+- Per bars data, SPY close on 2026-04-22 = 711.20. It appears the benchmark baseline was initialized to the 4/22 close, not the 4/24 close (713.97) or today's 4/27 open.
+- As-is, cumulative SPY return = +0.39% at today's open. Agent starts at 0.00%. Agent was in cash pre-experiment so the gap is expected.
+- No action needed unless operator wants to reset benchmark to today's actual open price. Using tool output as authoritative per learned behavior [W1|HIGH].
+
+**EMAIL TOOL:** Will attempt at end of routine; expected to fail (SENDGRID_API_KEY not set per prior notes).

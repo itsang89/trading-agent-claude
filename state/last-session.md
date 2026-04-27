@@ -1,21 +1,20 @@
 # Last Session Summary
 
-**Written by:** weekly-review
-**Date:** 2026-04-24 (Friday)
-**Time (ET):** ~5:00 PM ET
-**Week number:** 1 (pre-experiment — experiment starts Monday 2026-04-27)
+**Written by:** pre-market-research
+**Date:** 2026-04-27 (Monday — Experiment Day 1)
+**Time (ET):** ~8:45 AM ET
+**Week number:** 1 (experiment started — first live trading day)
 
 ---
 
 ## Portfolio State
 
 - Equity: $10,000.00
-- Cash: $10,000.00 (100% — no positions)
+- Cash: $10,000.00 (100% — no positions yet)
 - Positions held: 0
 - Buying power: $20,000.00
-- Week P&L: $0.00 (0.00%)
-- vs SPY this week: Agent 0.00% vs SPY +0.78% (partial window; pre-experiment)
-- vs SPY cumulative: N/A — experiment starts 2026-04-27
+- Cumulative P&L: $0.00 (0.00%)
+- vs SPY cumulative: Agent 0.00% vs SPY +0.39% (SPY start_price 711.20, last close 713.97)
 
 ## Open Positions
 
@@ -25,66 +24,62 @@ None.
 
 None.
 
-## Week 1 (Pre-Experiment) Recap
+## Today's Signal Summary
 
-- 2 journal days: 2026-04-23 and 2026-04-24 (Thu, Fri). Mon–Wed had no routine runs.
-- 0 orders placed, 0 rejected, 0 stop-losses, 0 behavioral flags.
-- QQQ entry-eligible on both days (Trend BULLISH, RS_spread +2.58% to +2.72%). Not executed due to pre-experiment gate.
-- Universe proposal (12 tickers, 6 sectors, 3 ETFs) committed on 2026-04-23. Awaiting operator lock.
-- All 6 routines logged a non-blocking email tool error.
-- metrics/daily-metrics.csv has a duplicate row for 2026-04-23 (double-write bug).
+SPY benchmark 10d_ROC: +5.097% (SMA_13 proxy — 13 bars available)
 
-## Key Decisions This Week
+| Ticker | Close | Trend | RS_spread | Eligible |
+|--------|-------|-------|-----------|----------|
+| MSFT | $424.59 | BULLISH | +9.38% | YES |
+| AMZN | $263.96 | BULLISH | +5.61% | YES |
+| NVDA | $208.18 | BULLISH | +5.28% | YES |
+| QQQ | $663.92 | BULLISH | +3.54% | YES |
+| GOOGL | $344.33 | BULLISH | +3.43% | YES |
+| META | $674.93 | BULLISH | +2.06% | YES (6th, optional) |
+| AAPL | $271.04 | BULLISH | −1.02% | NO (RS NEGATIVE) |
+| LLY | $884.02 | BEARISH | −10.98% | NO |
+| JPM | $308.27 | BEARISH | −5.61% | NO |
+| BRK.B | $469.32 | BEARISH | −7.31% | NO |
+| XLV | $144.20 | BEARISH | −7.22% | NO |
+| XLE | $56.89 | BULLISH | −5.18% | NO (RS NEGATIVE) |
 
-- Held 100% cash all week — pre-experiment gate respected.
-- Proposed standard 5% sizing for QQQ (RS_spread 2.58% below high-conviction 3% threshold).
-- Used SMA_14 as proxy for SMA_20 (only 14 bars returned by API).
-- Self-corrected prior session's incorrect experiment start date (4/28 → authoritative 4/27).
+## Execution Intents for 9:45 AM
+
+Queue for market-open-execution (9:45 AM ET today):
+
+1. BUY MSFT — 5% of equity (~$500, ~1.18 shares) — RS_spread +9.38%, high-conviction eligible
+2. BUY AMZN — 5% of equity (~$500, ~1.89 shares) — RS_spread +5.61%, high-conviction eligible
+3. BUY NVDA — 5% of equity (~$500, ~2.40 shares) — RS_spread +5.28%, high-conviction eligible
+4. BUY QQQ — 5% of equity (~$500, ~0.75 shares) — RS_spread +3.54%, high-conviction eligible
+5. BUY GOOGL — 5% of equity (~$500, ~1.45 shares) — RS_spread +3.43%, high-conviction eligible
+6. BUY META — 5% of equity (~$500, ~0.74 shares) — OPTIONAL, RS_spread +2.06% (standard)
+
+All: default 5% sizing. High-conviction upsize to 7% eligible for positions 1–5 IF execution routine reconfirms signals AND today's daily return > 1% at time of execution.
+
+## Key Decisions This Session
+
+- Universe is LOCKED (operator locked 2026-04-26). Full 12-ticker universe active from Day 1.
+- Full universe entry vs QQQ-only: operator lock resolves Week 1 "SPY/QQQ only while reviewing" restriction.
+- SMA_13 proxy in use (13 bars returned for 20-day request). All eligible tickers >2.5% above SMA_13 → robust trend signals.
+- Chose 5-position primary plan (top 5 by RS_spread) + optional 6th (META) to stay near 70% cash.
 
 ## Contradictions or Open Questions
 
-- None.
+1. SPY benchmark start_price = 711.2 per tool output; this is the 4/22 SPY close per bars data, not the 4/24 close (713.97) or today's open. The tool says experiment_started=true and latest_date=2026-04-24. Minor discrepancy in benchmark baseline initialization — flagged to operator in notes-for-operator.md. Will use the tool output as authoritative.
+2. Fractional share support: execution routine must confirm Alpaca paper account supports fractional quantities. If not, use whole-share floor (e.g., QQQ: 0 whole shares if price > $500, or 1 share = $664).
 
-## Monday 2026-04-27 — Experiment Day 1 Intents
+## Flags This Session
 
-1. **Pre-market (8:30 AM ET):**
-   - `get_market_status` (exit if closed).
-   - `get_bars QQQ 20` and `get_bars SPY 20`. Recompute Trend (close vs SMA_20) and RS_spread (10d_ROC delta).
-   - If QQQ: Trend BULLISH AND RS_spread > 0 → queue QQQ BUY at 5% of equity (~$500).
-   - If either signal fails → 100% cash, document in pre-market journal.
-2. **Execution (9:45 AM ET):**
-   - Execute QQQ intent if signals confirm.
-   - Benchmark start price for SPY will be captured automatically when `experiment_started` flips to true (2026-04-27).
-3. **EOD (4:30 PM ET):**
-   - Day P&L vs SPY from start.
-   - Check QQQ position for stop-loss proximity.
-   - Flag any contradictions.
-
-## Signals Snapshot (as of 2026-04-24 close)
-
-- SPY close: $713.97 (prior: $708.41, +0.78% on 4/24)
-- QQQ signals from 4/23 close:
-  - Close: $651.40 > SMA_14 $626.73 → Trend BULLISH
-  - 10d_ROC: +6.78%; SPY 10d_ROC: +4.20%; RS_spread: +2.58% → RS POSITIVE
-  - Standard sizing (RS_spread < 3% high-conviction threshold)
-- **Revalidate at Monday pre-market — SPY rallied +0.78% on 4/24, which may compress QQQ RS_spread.**
-
-## Flags This Week
-
-- 0 behavioral flags
-- 0 guardrail rejections
 - 0 stop-losses
-- 6 non-blocking email tool errors (one per routine)
+- 0 behavioral flags
+- 0 tool errors
 
-## Notes for Next Session (Monday 2026-04-27)
+## Notes for Next Session (market-open-execution, 9:45 AM ET)
 
-- Experiment officially starts. First live order expected if QQQ signals hold.
-- Confirm Alpaca fractional share support at execution (QQQ ~$650 → ~0.77 shares for $500).
-- SPY benchmark start price recorded Monday.
-- Universe still stubbed (SPY + QQQ). Operator lock pending — do not trade beyond QQQ.
-- Email tool expected to continue failing until `SENDGRID_API_KEY` set.
-- Read new LEARNED BEHAVIORS section in CLAUDE.md — 4 new rules added this week.
-
----
-
-**Handoff clean. No blockers. Ready for experiment Day 1.**
+1. Read today's pre-market journal (journal/2026-04-27-pre-market.md).
+2. Re-run get_account, get_positions.
+3. Confirm: no stop-loss positions (there are none).
+4. Execute buy queue (items 1–5 above). Consider META as 6th.
+5. Revalidate high-conviction criteria at time of execution (not pre-market). Only upsize to 7% if RS_spread still > 3% AND today's early price vs yesterday's close > +1%.
+6. Log order confirmations and any rejections.
+7. Write journal/2026-04-27-execution.md.

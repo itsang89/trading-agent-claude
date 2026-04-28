@@ -225,3 +225,24 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - No action needed unless operator wants to reset benchmark to today's actual open price. Using tool output as authoritative per learned behavior [W1|HIGH].
 
 **EMAIL TOOL:** Will attempt at end of routine; expected to fail (SENDGRID_API_KEY not set per prior notes).
+
+---
+
+## [2026-04-28 ~16:30 ET — EOD Routine for 2026-04-27]
+
+**EOD ROUTINE COMPLETED — reviewing Experiment Day 1 (2026-04-27)**
+- EOD ran one day late (executed 2026-04-28 instead of 2026-04-27 at 4:30 PM ET).
+- Equity at tool-call time: $10,033.63 | Cash: $7,018.71 | Positions: 6
+- Day 1 P&L: +$33.63 (+0.34%) vs SPY today +0.17% → agent outperformed by +0.17 pp
+- Cumulative: agent +0.34% | SPY 0.00% (experiment-anchored per get_spy_benchmark)
+- No stop-loss triggers. No behavioral flags. No contradictions vs execution journal.
+- journal/2026-04-27-eod.md written. state/last-session.md updated.
+
+**METRICS DISCREPANCY — append_metrics.py:**
+- append_metrics.py wrote row dated 2026-04-28 (today) with equity $10,020.92 — not 2026-04-27 with $10,033.63.
+- Cause: routine ran late; tool used current date and live prices at time of execution.
+- metrics/daily-metrics.csv now has a 4/28 row instead of a 4/27 row for Day 1 data.
+- cum_spy_return in metrics (0.9535%) anchors from 2026-04-23 (first CSV row); get_spy_benchmark anchors from 2026-04-27 (experiment start). Both are internally consistent but tracking different baselines.
+- Recommendation: if you need Day 1 close data accurately in the CSV, manually correct the 4/28 row to date=2026-04-27 and equity=$10,033.63. Otherwise, accept 4/28 row as-is and note the late-run gap.
+
+**EMAIL TOOL:** Attempting at end of routine; expected to fail (SENDGRID_API_KEY not set per prior notes).

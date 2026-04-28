@@ -1,3 +1,4 @@
 date,equity,cash,day_pnl_abs,day_pnl_pct,spy_close,spy_day_return,cum_return,cum_spy_return,positions_held,orders_placed,orders_rejected
 2026-04-23,10000.0,10000.0,0.0,0.0,708.41,-0.3923,0.0,0.123,0,0,0
 2026-04-24,10000.0,10000.0,0.0,0.0,713.97,0.7849,0.0,0.9088,0,0,0
+2026-04-28,10020.92,7018.71,20.92,0.2092,715.16,0.1674,0.2092,0.9535,6,0,0

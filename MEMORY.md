@@ -12,6 +12,7 @@ Trading-agent-claude/
 │   ├── positions.json       # Current holdings (cache from Alpaca — overwrite each routine)
 │   ├── account.json         # Account snapshot (overwrite each routine)
 │   ├── universe.json        # Locked universe + sector map (set week 1, read-only after)
+│   ├── position-highs.json  # Peak close price per held ticker for trailing stop calculation
 │   └── strategy.md          # Strategy rules and signal arithmetic (operator edits only, read every session)
 │
 ├── trades/
@@ -73,6 +74,20 @@ Trading-agent-claude/
   "currency": "USD"
 }
 ```
+
+### `state/position-highs.json`
+- **Purpose:** Tracks the peak closing price and original entry price for each held position. Used to compute trailing stop prices each routine.
+- **Written by:** Routines — updated whenever a new high is set, and when positions are opened or closed.
+- **Read by:** All routines (stop-loss/trailing-stop audit step).
+- **Write pattern:** Full overwrite on change. Never append.
+- **Schema:**
+```json
+{
+  "NVDA": {"high_close": 215.50, "entry_price": 209.45, "last_updated": "2026-04-28"}
+}
+```
+- **Trailing stop logic:** `effective_stop = max(entry_price * 0.92, high_close * 0.90 if high_close > entry_price * 1.10 else 0)`
+- **Maintenance:** Add on new position open; update entry_price on adding shares; update high_close whenever new bars data shows a higher close; remove on position close.
 
 ### `state/universe.json`
 - **Purpose:** The locked trading universe. Source of truth for the validator whitelist and sector map.
@@ -136,7 +151,9 @@ date,equity,cash,day_pnl_abs,day_pnl_pct,spy_close,spy_day_return,cum_return,cum
 
 **Flag types:**
 - `GUARDRAIL_REJECTION` — validator rejected an order
-- `STOP_LOSS_TRIGGERED` — position hit 8% loss threshold
+- `STOP_LOSS_TRIGGERED` — position hit 8% loss threshold from entry
+- `TRAILING_STOP_TRIGGERED` — position dropped 10% below its peak close (trailing stop)
+- `RS_MOMENTUM_DECAY` — RS_spread declining 3 consecutive sessions (early warning)
 - `SELF_CONTRADICTION` — LLM reasoning contradicts a prior journal entry
 - `HALLUCINATED_TICKER` — LLM referenced a ticker not in the universe
 - `TOOL_ERROR` — a tool call returned an error
@@ -157,14 +174,15 @@ date,equity,cash,day_pnl_abs,day_pnl_pct,spy_close,spy_day_return,cum_return,cum
 
 ## Read/Write Summary Per Routine
 
-| File | pre-market | execution | eod | weekly |
-|------|-----------|-----------|-----|--------|
-| `state/positions.json` | Read+Write | Read+Write | Read | Read |
-| `state/account.json` | Read+Write | Read+Write | Read | — |
-| `state/universe.json` | Read | Read | — | Read |
-| `state/strategy.md` | Read | Read | Read | Read |
-| `trades/trades.csv` | — | (via tool) | — | Read |
-| `journal/*.md` | Read 3, Write | Read today's, Write | Write | Read all week, Write |
-| `metrics/daily-metrics.csv` | — | — | Read | Read |
-| `logs/behavioral-flags.jsonl` | Write (if triggered) | Write (if triggered) | — | Read |
-| `notes-for-operator.md` | Write (if needed) | Write (if needed) | Write (if needed) | Write (if needed) |
+| File | pre-market | execution | mid-session | eod | weekly |
+|------|-----------|-----------|-------------|-----|--------|
+| `state/positions.json` | Read+Write | Read+Write | Read+Write | Read | Read |
+| `state/account.json` | Read+Write | Read+Write | Read+Write | Read | — |
+| `state/universe.json` | Read | Read | — | — | Read |
+| `state/strategy.md` | Read | Read | Read | Read | Read |
+| `state/position-highs.json` | Read+Write | Read+Write | Read+Write | Read+Write | — |
+| `trades/trades.csv` | — | (via tool) | (via tool) | — | Read |
+| `journal/*.md` | Read 3, Write | Read today's, Write | Read today's, Write | Write | Read all week, Write |
+| `metrics/daily-metrics.csv` | — | — | — | Read | Read |
+| `logs/behavioral-flags.jsonl` | Write (if triggered) | Write (if triggered) | Write (if triggered) | — | Read |
+| `notes-for-operator.md` | Write (if needed) | Write (if needed) | Write (if needed) | Write (if needed) | Write (if needed) |

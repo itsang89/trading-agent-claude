@@ -15,9 +15,10 @@
 ## Strategy Framework
 
 **Entry:** Buy when BOTH signals agree: (1) price > 20-day SMA (uptrend) AND (2) ticker's 10-day return > SPY's 10-day return (outperforming benchmark).
-**Exit:** Three triggers in priority order: (1) loss ≥ 8% from avg_entry — market-sell immediately; (2) price drops below 20-day SMA — soft exit, sell next execution; (3) RS_spread < −1% for 2 consecutive sessions — soft exit, sell next execution.
-**Sizing:** 5% default · 7% high conviction (RS_spread > 3% AND up >1% on day, must document) · 10% maximum.
-**Portfolio shape:** 4–6 concurrent positions · ≥25% cash at all times (above the 20% hard floor).
+**Exit:** Four triggers in priority order: (1) loss ≥ 8% from avg_entry OR trailing stop triggered (see below) — market-sell immediately; (2) price drops below 20-day SMA — flag at EOD, sell at next morning execution or mid-session if caught at 1:30 PM; (3) RS_spread < −1% for 2 consecutive sessions — sell at next execution. RS counter resets ONLY when RS_spread > 0%.
+**Trailing stop:** Activates when position high_close > avg_entry × 1.10. Effective stop = max(avg_entry × 0.92, high_close × 0.90). Tracked in `state/position-highs.json`. Checked every routine.
+**Sizing:** Conviction-based tiers — see `state/strategy.md`. No fixed default or maximum; size reflects signal strength. Always document rationale for any position ≥10%.
+**Portfolio shape:** No fixed position count or cash floor. Cash is residual. Prefer 3–5 high-conviction positions over 6–8 borderline ones. Self-imposed soft cash minimum ~10% for redeployment flexibility.
 **Never hold SPY as a position** (including Week 1 — QQQ is the only valid Week-1 holding; SPY is in the universe but cannot beat itself). SPY is only the RS benchmark denominator.
 **Full signal arithmetic:** `state/strategy.md` — read this every session.
 
@@ -39,14 +40,13 @@ Universe rules for proposal (first pre-market run, week 1):
 
 | Limit | Value |
 |---|---|
-| Max single position | 10% of portfolio equity |
 | Stop-loss | 8% below average entry — you enforce this each routine |
-| Max concurrent positions | 8 |
-| Minimum cash reserve | 20% of portfolio equity |
 | No-trade windows | 9:30–9:45 ET and 15:45–16:00 ET (buys blocked) |
 | Universe whitelist | From `state/universe.json` |
 | Allowed order types | `market` or `limit` only |
 | Sector concentration | ≤40% of equity in one GICS sector |
+
+Note: max position size, minimum cash reserve, and max concurrent positions constraints have been removed as hard limits by operator on 2026-04-28. Sizing and cash are governed by the conviction-based strategy in `state/strategy.md`. The validator code (`tools/validate_order.py`) may still enforce the old limits until updated — if an order is rejected for cash/size/count reasons, log it as a code constraint conflict, note in `notes-for-operator.md`, and do not retry with a tweaked order.
 
 Rejected orders return: `{"passed": false, "rule": "...", "current": ..., "limit": ...}`
 Log rejection and move on. Do not retry with a tweaked order.
@@ -59,8 +59,9 @@ Log rejection and move on. Do not retry with a tweaked order.
 |---|---|---|---|
 | `pre-market-research` | 8:30 AM ET, Mon–Fri | claude-sonnet-4-6 | `make run-premarket` |
 | `market-open-execution` | 9:45 AM ET, Mon–Fri | claude-sonnet-4-6 | `make run-execution` |
+| `mid-session-check` | 1:30 PM ET, Mon–Fri | claude-sonnet-4-6 | `make run-midsession` |
 | `end-of-day-review` | 4:30 PM ET, Mon–Fri | claude-sonnet-4-6 | `make run-eod` |
-| `weekly-review` | 5:00 PM ET, Friday | claude-opus-4-6 | `make run-weekly` |
+| `weekly-review` | 5:00 PM ET, Friday | claude-opus-4-7 | `make run-weekly` |
 
 **Before any routine:** call `get_market_status`. If `is_trading_day: false`, exit immediately with a log note.
 **Concurrency:** Check for `.lock` file. If it exists and is <30 min old, exit immediately.
@@ -93,6 +94,7 @@ python tools/cancel_order.py <order_id>              # cancel open order
 state/positions.json       — current positions (re-fetched each routine, overwrite)
 state/account.json         — account snapshot (overwrite)
 state/universe.json        — locked universe + sector map (read-only during routines)
+state/position-highs.json  — peak close price per held ticker for trailing stops (overwrite on change)
 trades/trades.csv          — append-only trade log
 journal/YYYY-MM-DD-*.md    — per-routine narrative entries (never overwrite)
 metrics/daily-metrics.csv  — daily P&L and benchmark (written by append_metrics.py, not you)
@@ -118,15 +120,24 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 2. Read today's pre-market journal.
 3. Call `get_account`, `get_positions`.
 4. Execute stop-loss sells first (use `place_order`).
-5. Execute buy/sell intents from pre-market. Default sizing: 5% of equity. Max: 10%. Document reason if >5%.
+5. Execute buy/sell intents from pre-market. Size per conviction tier in `state/strategy.md`. Document rationale for any position ≥10%.
 6. Write journal: `journal/YYYY-MM-DD-execution.md` — list orders placed, rejections, sizing rationale.
+
+### mid-session-check
+1. Check market status — exit if closed (this routine requires an open market for intraday sells).
+2. Read today's pre-market and execution journals.
+3. Call `get_account`, `get_positions`. Check trailing stop and regular stop for every position.
+4. Run `get_bars` for each held ticker. Compute Trend and RS_spread.
+5. Execute intraday soft exits: Trend BEARISH → market-sell immediately; RS < -1% AND was also < -1% at execution → market-sell immediately.
+6. Write brief journal: `journal/YYYY-MM-DD-midsession.md`. Update last-session.md.
 
 ### end-of-day-review
 1. Check market status — log if already closed, proceed anyway.
 2. Call `get_account`, `get_positions`, `get_spy_benchmark`.
 3. Compute day's P&L vs SPY.
 4. Note any positions approaching stop-loss (loss >5%, not yet 8%).
-5. Write journal: `journal/YYYY-MM-DD-eod.md` — numbers-forward, bullet points.
+5. Run signal check on all held positions (get_bars each ticker). Flag soft exits for next morning execution. Track RS_spread momentum decay (3-session declining trend).
+6. Write journal: `journal/YYYY-MM-DD-eod.md` — numbers-forward, bullet points.
 
 ### weekly-review (Friday only, claude-opus-4-6)
 1. Read all journal entries from the week.
@@ -141,7 +152,7 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 
 1. You are not discovering a trading edge. Frame views as opinions, not discoveries.
 2. Read the last 3 journal entries before forming intents. Acknowledge contradictions explicitly.
-3. Default position size: 5% of equity. Max 10%. Always document reason for >5%.
+3. Size by conviction tier per `state/strategy.md`. No hard default or max. Always document rationale for any position ≥10%.
 4. Stop-losses are yours to manage. Check every position every routine. Place market-sell if loss ≥8%.
 5. Tool error → log it, stop the routine. Do not retry or improvise.
 6. Market closed → exit immediately. No "pre-positioning" orders.
@@ -156,8 +167,8 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 
 - No options, futures, crypto, forex, margin, or shorting.
 - No day-trading: positions opened today held at least overnight unless stop triggers.
-- No network calls outside Alpaca endpoints (week 1).
-- No news ingestion (week 1).
+- No network calls outside Alpaca endpoints (weeks 1–2).
+- No news ingestion until 2026-05-05. From 2026-05-05 onwards, news tools are permitted for timing decisions (macro calendar, earnings dates). Price/technical signals remain primary.
 - No reading/writing outside the repo directory.
 - No talking to operator during routines — use `notes-for-operator.md`.
 

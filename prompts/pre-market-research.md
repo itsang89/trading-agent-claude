@@ -10,7 +10,7 @@ Run: `pip install -q -r requirements.txt`
 
 ### Step 1 — Read your operational brief
 Read CLAUDE.md fully. Pay special attention to the LEARNED BEHAVIORS section at the bottom — these are operator-endorsed rules from prior weeks that carry the same weight as hard limits.
-Then read `state/strategy.md` — this contains the signal arithmetic, entry/exit rules, sizing table, and recommended universe. You will apply these rules in Step 7b below.
+Then read `state/strategy.md` — this contains the signal arithmetic, entry/exit rules, and conviction-tier sizing table. You will apply these rules in Step 7b below.
 
 ### Step 2 — Read last session context
 If state/last-session.md exists, read it now. This was written by the previous routine and contains: current equity, open positions, carry-forward intents, and any open contradictions to resolve.
@@ -32,14 +32,28 @@ python3 tools/get_positions.py
 Write the account output to state/account.json.
 Write the positions output to state/positions.json.
 
-### Step 6 — Stop-loss audit (MANDATORY every routine)
+### Step 6 — Stop-loss and trailing stop audit (MANDATORY every routine)
+Read state/position-highs.json.
 For every position in state/positions.json:
-  Compute: loss_pct = (current_price - avg_entry_price) / avg_entry_price
-  If loss_pct <= -0.08:
+
+  hard_stop_price = avg_entry_price * 0.92
+
+  Trailing stop (from position-highs.json):
+    If ticker in position-highs.json:
+      high_close = position_highs[ticker]["high_close"]
+      trailing_active = (high_close > avg_entry_price * 1.10)
+      trailing_stop_price = high_close * 0.90 if trailing_active else 0
+    Else:
+      Add ticker to position-highs.json: {"high_close": avg_entry_price, "entry_price": avg_entry_price, "last_updated": today}
+      trailing_stop_price = 0
+
+  effective_stop = max(hard_stop_price, trailing_stop_price)
+
+  If current_price < effective_stop:
     → Queue a market-sell for execution routine
-    → Append to logs/behavioral-flags.jsonl:
-      {"date":"YYYY-MM-DD","routine":"pre-market-research","flag_type":"STOP_LOSS_TRIGGERED","ticker":"X","rule":"STOP_LOSS_8PCT","context":"Loss reached X%. Market-sell queued."}
-  If loss_pct <= -0.05 (warning zone):
+    → Log to behavioral-flags.jsonl:
+      flag_type = "TRAILING_STOP_TRIGGERED" if trailing_stop_price > hard_stop_price else "STOP_LOSS_TRIGGERED"
+  If current_price < avg_entry_price * 0.95 (warning zone, not yet at stop):
     → Note in journal entry
 
 ### Step 7 — Fetch market data
@@ -52,10 +66,14 @@ Run: `python3 tools/get_spy_benchmark.py`
 Using bars data from Step 7, compute for SPY first, then for each held and universe ticker:
 
 ```
-bars          = get_bars output (oldest → newest)
-close_today   = bars[-1]["close"]
-close_10d_ago = bars[-11]["close"]
-sma_20        = mean of last 20 closes
+bars            = get_bars output (oldest → newest)
+close_today     = bars[-1]["close"]
+close_10d_ago   = bars[-11]["close"]
+close_yesterday = bars[-2]["close"]
+sma_20          = mean of last 20 closes (or last N if fewer bars; label as SMA_N)
+volume_today    = bars[-1]["volume"]
+volume_20d_avg  = mean of last 20 bars' volume
+volume_ratio    = volume_today / volume_20d_avg  (>1.2 = elevated, <0.8 = weak)
 
 10d_ROC   = (close_today - close_10d_ago) / close_10d_ago * 100
 spy_ROC   = SPY's 10d_ROC  ← compute this first, reuse for all RS_spread calculations
@@ -65,41 +83,76 @@ Trend = BULLISH if close_today > sma_20, else BEARISH
 RS    = POSITIVE if RS_spread > 0%, NEUTRAL if -1% to 0%, NEGATIVE if < -1%
 ```
 
+**Regime count:** After computing all signals, count how many of the 12 universe tickers have Trend = BULLISH. Classify:
+- Bull regime: ≥8 BULLISH → be aggressive
+- Mixed regime: 5–7 BULLISH → be selective
+- Bear regime: <5 BULLISH → mostly cash, only highest RS names
+
 **For held positions:**
 - Trend = BEARISH → flag as soft-exit candidate; queue sell intent for execution routine.
-- RS = NEGATIVE (single session) → flag as WATCH in journal; do NOT queue sell yet.
-- RS = NEGATIVE for 2 consecutive sessions → flag as soft-exit candidate; queue sell intent. (Check prior EOD journal or last-session.md to confirm prior session's RS was also NEGATIVE before queuing.)
+- RS = NEGATIVE (single session) → flag as WATCH; do NOT queue sell yet.
+- RS = NEGATIVE for 2 consecutive sessions → flag as soft-exit candidate; queue sell intent.
+  (Counter resets ONLY when RS_spread > 0% — check prior sessions via journals/last-session.md.)
+- RS_spread declining 3 consecutive sessions (even if still positive) → flag "RS DETERIORATING" in journal; do not add to this position; be ready to exit at first signal failure.
 
-**For universe tickers:** Tickers eligible for new entry = Trend BULLISH AND RS POSITIVE AND open positions < 6 AND cash after trade ≥ 25% equity. Rank by RS_spread descending.
+**Conviction tier assessment for entries and existing positions:**
+Use the sizing table from state/strategy.md. Incorporate volume_ratio as a secondary confidence signal:
+- volume_ratio > 1.2 alongside a strong RS_spread → supports higher end of the tier range
+- volume_ratio < 0.8 → prefer lower end of tier range; treat borderline entries as skip
 
-Write the signal table in your journal entry (see state/strategy.md for the table format).
+**For universe tickers — eligible for new entry if:**
+- Trend = BULLISH AND RS = POSITIVE
+- No other entry constraints (cash and position count are judgment calls, not hard gates)
+- Rank eligible tickers by RS_spread descending; buy highest conviction first
+- Skip borderline entries (RS_spread 0–1%) unless portfolio is lightly invested and no better option exists
+
+Write the signal table in your journal entry.
+
+### Step 7c — Update position-highs.json with latest closes
+After Step 7 bars are collected, for each held ticker:
+  If bars[-1]["close"] > position_highs[ticker]["high_close"]:
+    Update position_highs[ticker]["high_close"] = bars[-1]["close"]
+    Update position_highs[ticker]["last_updated"] = today
+Write the updated state/position-highs.json.
+
+### Step 7d — RS_spread momentum decay check (held positions only)
+For each held ticker, compare today's RS_spread to the last 2 sessions (from last-session.md and prior EOD journal).
+If RS_spread has declined each session for 3 consecutive sessions (even if still > 0%):
+→ Flag "RS DETERIORATING" in journal; do not add shares; be ready to exit at first signal failure.
+→ Append to logs/behavioral-flags.jsonl: {"date":"...", "routine":"pre-market-research", "flag_type":"RS_MOMENTUM_DECAY", "ticker":"X", "context":"RS_spread declining 3 sessions: X% → Y% → Z%"}
 
 ### Step 8 — Read experiment config
 Read state/experiment-config.json — note current week number and model assignments.
 
 ### Step 9 — Intent formation
 Form your trading views for today using the signal outputs from Step 7b. Requirements:
-- **New buys:** Only from Step 7b's eligible list (Trend BULLISH + RS POSITIVE). If no tickers qualify, hold cash — do not force entries.
-- **Soft exits:** Any held position flagged in Step 7b (Trend BEARISH or RS NEGATIVE) → add sell intent for execution routine.
+- **Regime context first:** Note the bull/mixed/bear regime from Step 7b. Use this to calibrate overall aggression.
+- **New buys:** Only from Step 7b's eligible list (Trend BULLISH + RS POSITIVE). Rank by RS_spread. Skip borderline (0–1%) unless portfolio is lightly invested.
+- **Sizing:** Apply conviction tiers from state/strategy.md. No fixed default or hard maximum — size reflects signal strength. Document rationale for any position ≥10%.
+- **Soft exits:** Any held position flagged in Step 7b (Trend BEARISH or RS 2-session NEGATIVE) → add sell intent.
 - **Hard stops:** Any position with loss ≥ 8% → already queued from Step 6; confirm here.
-- **Sizing:** Default 5% of equity. Up to 7% only if RS_spread > 3% AND close_today > close_yesterday by >1% (use bars[-1] and bars[-2]) — document the reason. Never exceed 10%.
-- **Position count:** Target 4–6 concurrent positions. Do not exceed 6; hard max is 8 (enforced by validator). Do not open new positions if cash would fall below 25%.
+- **Re-entry rule:** If re-entering a ticker that was exited in the last 5 sessions, start at borderline tier (3–5%) regardless of RS_spread. After 2 sessions of confirmed signals, may scale to full conviction tier.
 - If changing a prior stated position (from journals), explicitly write why.
 - Do not form intents that contradict the LEARNED BEHAVIORS in CLAUDE.md without justifying the exception.
-- Week 1: Only QQQ is eligible for new positions (holding SPY cannot beat SPY).
 
 ### Step 10 — Write journal entry
 Write to: journal/YYYY-MM-DD-pre-market.md
 
 Required sections (terse bullets, numbers over prose):
+- **Regime**: BULL/MIXED/BEAR — N/12 universe tickers BULLISH
 - **Portfolio state**: equity, cash%, positions count, cumulative vs SPY
 - **Stop-loss status**: any positions flagged or queued
-- **Market read**: your view on SPY/sector conditions today
-- **Intents**: each ticker — action, size, rationale, conditions
+- **Signal table**: see format below
+- **Intents**: each ticker — action, conviction tier, target size, rationale
 - **Carry-forward from last session**: what you resolved from last-session.md
+
+Signal table format:
+| Ticker | SMA_N | Close | Trend | 10d_ROC | RS_spread | Vol_ratio | Conviction | Action |
+|--------|-------|-------|-------|---------|-----------|-----------|------------|--------|
 
 ### Step 11 — Update last-session.md
 Write state/last-session.md (full overwrite) using the schema in MEMORY.md.
+Include in the handoff: RS_spread values for each held position (for tomorrow's decay check), regime classification, and any RS DETERIORATING flags.
 
 ### Step 12 — Commit and push
 ```
@@ -117,11 +170,12 @@ Write the email body to /tmp/trading_email.txt, then run:
 python3 tools/send_email.py --subject "Trading Agent Pre-Market — YYYY-MM-DD" --body-file /tmp/trading_email.txt
 ```
 Body (terse bullets):
+- Regime: BULL/MIXED/BEAR (N/12 BULLISH)
 - Market status: open / closed / early close
 - Equity: $X | Cash: X% | Positions: N
 - Cumulative return vs SPY: agent X% vs SPY X%
 - Stop-loss flags: [list any queued sells, or "none"]
-- Today's intents: [buy/sell list with sizes]
+- Today's intents: [buy/sell list with conviction tiers and sizes]
 - Errors or operator notes: [any tool errors or notes-for-operator entries]
 
 ---

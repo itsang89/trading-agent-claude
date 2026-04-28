@@ -1,16 +1,18 @@
 """
-Deterministic order validator — enforces all hard risk limits from INSTRUCTIONS.md Section 3.
+Deterministic order validator — enforces hard risk limits.
 Returns structured JSON. No LLM involvement.
 
 Rules enforced:
   1. Universe whitelist
   2. Order type whitelist (market or limit only)
   3. No-trade windows (first/last 15 min of regular session: 9:30-9:45 and 3:45-4:00 ET)
-  4. Max single position size: 10% of portfolio equity
-  5. Max concurrent positions: 8
-  6. Minimum cash reserve: 20% of portfolio equity
-  7. Sector concentration: max 40% of equity in one GICS sector
-  8. Stop-loss enforcement is handled by the LLM each routine, not here
+  4. Sector concentration: max 40% of equity in one GICS sector
+  5. Stop-loss enforcement is handled by the LLM each routine, not here
+
+Removed as hard limits (operator-authorized 2026-04-28, now strategy-governed):
+  - Max single position size (was 10%)
+  - Max concurrent positions (was 8)
+  - Minimum cash reserve (was 20%)
 """
 import json
 from datetime import datetime, time
@@ -122,70 +124,9 @@ def validate(
     # --- Account-dependent checks (skipped if account not provided) ---
     if account is not None:
         equity = float(account.get("equity", 0))
-        cash = float(account.get("cash", 0))
         positions = positions or []
 
-        # --- Rule 5: Max concurrent positions ---
-        open_tickers = [p["ticker"].upper() for p in positions]
-        if side == "buy" and ticker not in open_tickers:
-            if len(open_tickers) >= 8:
-                return _fail(
-                    "MAX_POSITIONS",
-                    len(open_tickers),
-                    8,
-                    "Already at maximum of 8 concurrent positions.",
-                )
-
-        # --- Rule 4: Max single position size (10% of equity) ---
-        if side == "buy" and equity > 0:
-            # Current market value of existing position in this ticker
-            existing_value = sum(
-                float(p.get("market_value", 0))
-                for p in positions
-                if p["ticker"].upper() == ticker
-            )
-            # Use estimated_price if provided, else fall back to current_price from positions
-            price = estimated_price or next(
-                (float(p.get("current_price", 0)) for p in positions if p["ticker"].upper() == ticker),
-                0,
-            )
-            if price <= 0:
-                return _fail(
-                    "MAX_POSITION_SIZE",
-                    "unknown",
-                    equity * 0.10,
-                    f"Cannot validate position size for {ticker}: no price available. "
-                    f"Pass estimated_price or ensure ticker is in positions.",
-                )
-            new_value = existing_value + (qty * price)
-            max_position = equity * 0.10
-            if new_value > max_position:
-                return _fail(
-                    "MAX_POSITION_SIZE",
-                    round(new_value, 2),
-                    round(max_position, 2),
-                    f"Post-trade position value ${new_value:.2f} would exceed 10% of equity (${max_position:.2f}).",
-                )
-
-        # --- Rule 6: Minimum cash reserve (20% of equity) ---
-        if side == "buy" and equity > 0:
-            # Estimate order cost and check post-trade cash
-            price = estimated_price or next(
-                (float(p.get("current_price", 0)) for p in positions if p["ticker"].upper() == ticker),
-                0,
-            )
-            estimated_cost = qty * price if price > 0 else 0
-            post_trade_cash = cash - estimated_cost
-            min_cash = equity * 0.20
-            if post_trade_cash < min_cash:
-                return _fail(
-                    "MIN_CASH_RESERVE",
-                    round(post_trade_cash, 2),
-                    round(min_cash, 2),
-                    f"Post-trade cash ${post_trade_cash:.2f} would fall below required 20% reserve (${min_cash:.2f}).",
-                )
-
-        # --- Rule 7: Sector concentration (40% of equity) ---
+        # --- Rule 4: Sector concentration (40% of equity) ---
         if side == "buy" and equity > 0:
             universe_data = _load_universe()
             sector_map = universe_data.get("sector_map", {})

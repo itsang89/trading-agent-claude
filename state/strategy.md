@@ -1,30 +1,31 @@
 # Strategy Reference — Relative Strength + Trend Filter
 
 **Read-only during routines. Operator edits only.**
-Last updated: 2026-04-23
+Last updated: 2026-04-28 (operator-authorized revision)
 
 ---
 
 ## Core Premise
 
-Beat SPY by holding only assets already outperforming SPY in an uptrend.
-Do NOT hold SPY itself as a position — it cannot beat itself.
+Beat SPY by concentrating in the universe assets that are already outperforming SPY in an uptrend.
+Do NOT hold SPY itself — it cannot beat itself.
+Cash is a residual, not a target. Every idle dollar costs return when the market is trending up.
 
 ---
 
 ## Signal Computation
 
-Run after `get_bars <TICKER> 20` for each ticker (held + universe). Also always run for SPY.
+Run after `get_bars <TICKER> 20` for each ticker (held + universe). Always run for SPY.
 
 ```
 bars          = get_bars output, sorted oldest → newest
 close_today   = bars[-1]["close"]
-close_10d_ago = bars[-11]["close"]   # 10 trading days back (index -11 = 11th from end)
-sma_20        = mean of bars[-20]["close"] through bars[-1]["close"]  # last 20 closes
-close_yesterday = bars[-2]["close"]   # previous session's close (for high-conviction check)
+close_10d_ago = bars[-11]["close"]   # 10 trading days back
+sma_20        = mean of bars[-20]["close"] through bars[-1]["close"]
+close_yesterday = bars[-2]["close"]
 
 ticker_10d_ROC = (close_today - close_10d_ago) / close_10d_ago * 100
-spy_10d_ROC    = same calculation for SPY  ← always compute, even if SPY not held
+spy_10d_ROC    = same calculation for SPY
 RS_spread      = ticker_10d_ROC - spy_10d_ROC
 ```
 
@@ -45,16 +46,14 @@ NEGATIVE if RS_spread < -1%
 
 ## Entry Rules
 
-All five conditions must be true to open a new position:
+All three conditions must be true to open a new position:
 
 1. Ticker is in `state/universe.json`
 2. Trend = BULLISH (close_today > sma_20)
 3. RS = POSITIVE (RS_spread > 0%)
-4. Current open positions < 6
-5. Cash after trade ≥ 25% of equity
-   (Strategy preference is 25%; the validator enforces 20% as the hard floor — do not confuse the two)
 
-**Ranking:** When multiple tickers are eligible, rank by RS_spread descending. Buy highest first.
+**Ranking:** When multiple tickers qualify, rank by RS_spread descending. Buy highest conviction first.
+**Selectivity:** RS_spread 0–1% is borderline — only enter if the portfolio is lightly invested and no better signal exists. Prefer to skip borderline entries.
 
 ---
 
@@ -63,73 +62,117 @@ All five conditions must be true to open a new position:
 | Priority | Trigger | Action |
 |---|---|---|
 | 1 | Loss ≥ 8% from avg_entry | Hard stop — market-sell immediately this session |
-| 2 | Trend breaks: close_today drops below sma_20 | Soft exit — flag in EOD journal, sell at next execution open |
-| 3 | RS_spread < −1% for 2 consecutive sessions | Soft exit — flag in EOD journal, sell at next execution open |
+| 2 | Trend breaks: close_today drops below sma_20 | Flag at EOD — sell at next morning execution |
+| 3 | RS_spread < −1% for 2 consecutive sessions | Flag at EOD — sell at next morning execution |
 
-Soft exits exist to avoid panic-selling on a single bad close. If a soft exit is flagged at EOD, the execution routine sells at open the next day.
+**RS Counter Reset Rule:** The 2-session RS exit counter resets ONLY when RS_spread > 0%. A bounce to −0.8% does NOT reset the counter. A ticker must show genuine relative strength (positive spread) to clear the warning.
 
-A single session where RS_spread ≥ −1% resets the 2-session counter for Exit Rule 3.
+**Trailing stop:** Tracked in `state/position-highs.json`. Logic:
+```
+hard_stop_price     = avg_entry * 0.92                        # always active
+trailing_active     = high_close > avg_entry * 1.10           # activates once up >10%
+trailing_stop_price = high_close * 0.90 if trailing_active    # 10% below peak
+effective_stop      = max(hard_stop_price, trailing_stop_price)
+
+if current_price < effective_stop:
+    → market-sell immediately
+    → log TRAILING_STOP_TRIGGERED if trailing_stop_price > hard_stop_price, else STOP_LOSS_TRIGGERED
+```
+Check effective_stop in every routine's stop-loss audit step.
+
+**Winner trimming:** If a position grows beyond 25% of portfolio equity via appreciation (not a new purchase), trim back to ~20%. Prevents one winner from creating unmanageable single-stock risk.
 
 ---
 
-## Sizing Rules
+## Sizing — Conviction Tiers
 
-| Condition | Size | Requirement |
+No fixed default or maximum. Size reflects signal strength and regime context.
+
+| Tier | RS_spread | Additional condition | Target size | Notes |
+|---|---|---|---|---|
+| Borderline | 0–1% | — | 3–5% | Enter only if portfolio lightly invested; prefer to skip |
+| Standard | 1–3% | — | 5–8% | Normal entry range |
+| High conviction | 3–5% | — | 8–13% | Must document rationale in journal |
+| Very high conviction | >5% | price up >1% today | 13–20% | Must document thoroughly; note regime |
+
+**Adding to a winner:** If a held position is below its conviction-tier target AND both signals are still positive, scale up toward the tier ceiling. Recalculate avg_entry and stop-loss trigger after adding. After adding shares, update `state/position-highs.json` entry_price to the new avg_entry (keep high_close unchanged if it's higher).
+
+**Sizing down:** If a held position's RS_spread falls into a lower tier, consider trimming to the new tier ceiling rather than waiting for a full exit signal.
+
+**Always document:** Any position sized ≥10% requires explicit written rationale in the journal.
+
+---
+
+## Portfolio Shape and Cash
+
+**Position count:** No hard minimum or maximum. Use as many positions as signal quality and conviction allow. Natural range given 12-ticker universe: 3–7 positions. Prefer fewer high-conviction positions over many borderline ones.
+
+**Cash:** Residual after positions. Self-imposed soft minimum ~10% for redeployment flexibility. Cash level should reflect regime:
+
+| Regime | Universe above SMA_20 | Target cash |
 |---|---|---|
-| Default new position | 5% of equity | Always the starting point |
-| High conviction | 7% of equity | RS_spread > 3% AND close_today > close_yesterday by >1% — must document in journal |
-| Maximum | 10% of equity | Hard limit; validator will reject above this |
-| Adding to winner | Up to 7% total | Only if current position < 7% AND both signals still positive |
+| Bull | ≥8 of 12 tickers | 10–25% — be aggressive |
+| Mixed | 5–7 of 12 tickers | 25–40% — be selective |
+| Bear | <5 of 12 tickers | 50%+ — mostly cash, only highest RS names |
 
-Add quantity = floor((0.07 × equity - current_position_market_value) / current_price)
-Note: avg_entry recalculates upward after adding shares, raising the hard-stop trigger price.
-
-| Target concurrent positions | 4–6 (strategy preference; hard limit is 8) | Keeps ~25–30% cash above the 20% hard floor |
-
-Any position sized ≥ 7% requires explicit written rationale in the journal entry.
-Evaluate high-conviction criteria at entry time. Do not resize an existing position to 7% solely because criteria are met post-entry.
+**Sector concentration:** Hard code limit — ≤40% of equity in one GICS sector. Note: NVDA + MSFT + AAPL are all Information Technology; combined they cannot exceed 40%.
 
 ---
 
-## Recommended Universe (for week-1 universe proposal)
+## position-highs.json Maintenance
 
-Propose these 12 tickers in `universe-proposal.md`:
+This file is the source of truth for trailing stop calculations. Every routine must keep it current.
 
-| Ticker | GICS Sector | Role |
-|---|---|---|
-| QQQ | ETF | Tech/growth beta |
-| XLV | ETF | Healthcare defensive |
-| XLE | ETF | Energy/commodity exposure |
-| NVDA | Information Technology | Highest momentum potential |
-| MSFT | Information Technology | Quality + AI anchor |
-| AAPL | Information Technology | Large-cap stability |
-| GOOGL | Communication Services | AI/search |
-| META | Communication Services | Ad revenue momentum |
-| LLY | Health Care | GLP-1 growth, low market correlation |
-| JPM | Financials | Rate-sensitive quality |
-| BRK.B | Financials | Defensive quality |
-| AMZN | Consumer Discretionary | Cloud + e-commerce |
+**Schema:**
+```json
+{
+  "NVDA": {"high_close": 215.50, "entry_price": 209.45, "last_updated": "2026-04-28"}
+}
+```
 
-Validation: 12 tickers ✓ · 6 GICS sectors ✓ · 3 ETFs ✓ · all market cap >$10B ✓ · no leveraged ETFs ✓
+**Rules:**
+- **On new position open (execution routine):** Add entry with `high_close = fill_price`, `entry_price = fill_price`.
+- **On adding shares (execution):** Update `entry_price` to new avg_entry from get_positions. Keep `high_close` unchanged if it's already higher than the new avg_entry.
+- **On price update (pre-market, mid-session, EOD):** After running get_bars, if `bars[-1]["close"] > high_close`, update `high_close` and `last_updated`.
+- **On position close (any routine):** Remove the ticker's entry from the file.
+- **If ticker missing from file but in positions:** Re-initialize using avg_entry_price from positions.json as both `high_close` and `entry_price`.
 
 ---
 
-## Week 1 Special Rules
+## Risk Management
 
-- Universe = {SPY, QQQ} only until operator locks
-- QQQ is the ONLY valid position (holding SPY cannot beat SPY)
-- Compute Trend and RS_spread for QQQ vs SPY each session
-- If QQQ: Trend = BULLISH AND RS = POSITIVE → open or maintain a position at 5–7%; keep remaining equity in cash
-- If QQQ fails either signal → 100% cash, document in journal
-- SPY is always the RS denominator, never a position
+- If 3+ positions hit stop-loss in the same calendar week: pause all new entries; write regime assessment in that day's journal before any buys resume.
+- If portfolio is down >10% from experiment start ($10,000 notional): defensive posture — max 2–3 small positions, mostly cash, until signals recover.
+- If bear regime is confirmed (< 5/12 universe above SMA_20): hold only positions with RS_spread > 3% and strong trend; exit anything below conviction threshold.
+
+---
+
+## Regime Assessment (write this every pre-market)
+
+Count universe tickers with Trend = BULLISH. Classify regime. Use regime to calibrate aggression.
 
 ---
 
 ## Journal Signal Table (write this every pre-market)
 
-| Ticker | SMA_20 | Close | Trend | 10d_ROC | RS_spread | Action |
-|---|---|---|---|---|---|---|
-| QQQ | $X | $X | BULLISH | +2.1% | +1.4% | HOLD |
-| NVDA | $X | $X | BEARISH | -0.5% | -1.2% | WATCH |
+| Ticker | SMA_N | Close | Trend | 10d_ROC | RS_spread | Conviction Tier | Action |
+|---|---|---|---|---|---|---|---|
+| QQQ | $X | $X | BULLISH | +2.1% | +1.4% | Standard | HOLD |
+| NVDA | $X | $X | BEARISH | -0.5% | -1.2% | — | WATCH |
 
-Always include this table in the pre-market journal entry.
+Always include this table. Note the SMA period used (SMA_20 if ≥20 bars available; otherwise SMA_N with actual N).
+
+---
+
+## News Tools
+
+- **Until 2026-05-04:** Price and technical data only. No news.
+- **From 2026-05-05:** News tools permitted for timing decisions (macro calendar, earnings dates, Fed events). Technical signals remain primary. Use news to avoid holding through known binary events without a view; do not use it to override signal exits.
+
+---
+
+## Week 1 Special Rules (historical — kept for reference)
+
+- Universe was {SPY, QQQ} only until operator locked on 2026-04-26.
+- QQQ was the ONLY valid position.
+- SMA_20 proxy (SMA_14) was used due to insufficient bar history — see Learned Behaviors.

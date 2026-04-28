@@ -4,6 +4,6 @@
   "current_week": 1,
   "notional_capital": 10000,
   "model_daily": "claude-sonnet-4-6",
-  "model_weekly": "claude-opus-4-6",
+  "model_weekly": "claude-opus-4-7",
   "notes": "Update current_week each Monday. Operator updates this file \u2014 LLM reads it, never writes it."
 }

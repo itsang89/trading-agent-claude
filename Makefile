@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: test-tools run-premarket run-execution run-eod run-weekly run-learning-harness reset-state
+.PHONY: test-tools run-premarket run-execution run-midsession run-eod run-weekly run-learning-harness reset-state
 
 # Verify all read-only tools return valid output
 test-tools:
@@ -33,6 +33,9 @@ run-premarket:
 run-execution:
 	@bash scripts/run-routine.sh market-open-execution
 
+run-midsession:
+	@bash scripts/run-routine.sh mid-session-check
+
 run-eod:
 	@bash scripts/run-routine.sh end-of-day-review
 	@echo ""
@@ -40,7 +43,7 @@ run-eod:
 	python3 tools/append_metrics.py
 
 run-weekly:
-	@bash scripts/run-routine.sh weekly-review --model claude-opus-4-6
+	@bash scripts/run-routine.sh weekly-review --model claude-opus-4-7
 
 # Extract this week's lessons and update CLAUDE.md
 # Run manually after reviewing the weekly journal entry

@@ -228,6 +228,16 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 
 ---
 
+## [2026-04-29 ~9:45 ET — Execution Routine STOPPED]
+
+**PRE-MARKET ROUTINE DID NOT RUN TODAY**
+- `journal/2026-04-29-pre-market.md` does not exist.
+- Execution routine cannot proceed without pre-market intents — no buy/sell intents available, no queued stop-loss sells from signal review.
+- Routine STOPPED per Step 2 instructions.
+- **OPERATOR ACTION REQUIRED:** Run `make run-premarket` manually or investigate why the pre-market routine did not execute at 8:30 AM ET.
+- **RISK NOTE:** 6 positions remain open from 2026-04-28 execution (NVDA, MSFT, GOOGL, META, AMZN, QQQ). Stop-loss audit was NOT performed this session. Positions are unmonitored until the next routine runs. If significant drawdown has occurred, manual intervention may be needed.
+- Open positions as of last-session.md (2026-04-28 execution): NVDA avg_entry $209.45 (stop $192.69), MSFT $419.91 (stop $386.32), GOOGL $346.55 (stop $318.83), META $675.94 (stop $621.86), AMZN $260.99 (stop $240.11), QQQ $661.81 (stop $608.87).
+
 ## [2026-04-28 ~16:30 ET — EOD Routine for 2026-04-27]
 
 **EOD ROUTINE COMPLETED — reviewing Experiment Day 1 (2026-04-27)**

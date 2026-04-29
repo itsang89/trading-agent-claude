@@ -256,3 +256,21 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - Recommendation: if you need Day 1 close data accurately in the CSV, manually correct the 4/28 row to date=2026-04-27 and equity=$10,033.63. Otherwise, accept 4/28 row as-is and note the late-run gap.
 
 **EMAIL TOOL:** Attempting at end of routine; expected to fail (SENDGRID_API_KEY not set per prior notes).
+
+---
+
+## [2026-04-29 ~8:43 ET — Pre-Market Routine]
+
+**PRE-MARKET ROUTINE COMPLETED — 2026-04-29 (Experiment Day 3)**
+- Equity: $10,010.23 | Cash: $7,018.71 (70.1%) | Positions: 6
+- Cumulative: agent +0.10% | SPY −0.49% → agent leads by +0.59 pp
+- Regime: BULL (10/12 BULLISH)
+- META RS_spread = −1.15% — first NEGATIVE session (counter=1). No sell today; watch for 2nd consecutive.
+- Intents: BUY AAPL at 5% (~$501), ADD MSFT to 10% (~$500 more). XLE skipped (borderline).
+- No stop-loss triggers. All tools returned clean output.
+
+**PUSH FAILURE — pre-market routine:**
+- `git push -u origin claude/pensive-bardeen-2M7Rl` → HTTP 403 "Permission to itsang89/trading-agent-claude.git denied to itsang89" via local proxy.
+- Commit `pre-market: 2026-04-29` created locally but **NOT pushed** to remote.
+- Same 403 error seen on weekly-review 2026-04-24. Operator should verify proxy credential state.
+- All journal, state, and position-highs files are committed locally and will push when credentials are restored.

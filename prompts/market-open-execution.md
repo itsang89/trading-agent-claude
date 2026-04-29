@@ -112,6 +112,7 @@ Include: RS_spread values for each held position (for the decay tracking chain).
 ```
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ notes-for-operator.md
 git commit -m "execution: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push origin HEAD:main

@@ -7,3 +7,6 @@ date,time,ticker,side,qty,price,order_id,status,routine
 2026-04-27,09:47:38,META,buy,0.73,,517a64e6-8e97-4476-95d7-fba52dd510c9,OrderStatus.PENDING_NEW,
 2026-04-29,11:20:08,MSFT,buy,1.17,,85f78a7a-e9f2-4a0c-988a-4e84c938cfa7,OrderStatus.PENDING_NEW,
 2026-04-29,11:20:20,AAPL,buy,1.86,,50c072e9-7b70-4f05-94fc-c0a8801ed377,OrderStatus.PENDING_NEW,
+2026-04-30,09:48:51,META,sell,0.73,,b2d86b50-866c-4725-ac08-9de5f3ff717f,OrderStatus.PENDING_NEW,
+2026-04-30,09:49:25,AMZN,buy,1.0,,fd8c961b-6212-47d3-9e5e-853249dbed0b,OrderStatus.PENDING_NEW,
+2026-04-30,09:49:27,XLE,buy,13.0,,710c9072-f88d-4012-9b4d-1e971813a3aa,OrderStatus.PENDING_NEW,

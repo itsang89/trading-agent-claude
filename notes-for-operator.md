@@ -274,3 +274,5 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - Commit `pre-market: 2026-04-29` created locally but **NOT pushed** to remote.
 - Same 403 error seen on weekly-review 2026-04-24. Operator should verify proxy credential state.
 - All journal, state, and position-highs files are committed locally and will push when credentials are restored.
+
+[2026-04-30 execution] git push origin HEAD:main returned 403 (permission denied). All changes are committed and pushed to claude/laughing-cray-2QNn6. Operator action needed to merge to main.

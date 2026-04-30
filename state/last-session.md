@@ -1,67 +1,58 @@
 # Last Session Summary
 
-**Written by:** end-of-day-review
-**Date:** 2026-04-29 (Tuesday — Experiment Day 3)
-**Time (ET):** ~4:30 PM ET
+**Written by:** pre-market-research
+**Date:** 2026-04-30 (Wednesday — Experiment Day 4)
+**Time (ET):** ~8:21 AM ET
 **Week number:** 1
 
 ---
 
-## Portfolio State (2026-04-29 close, reconstructed)
+## Portfolio State (pre-market snapshot)
 
-- Equity: $10,013.11
+- Equity: $10,022.16
 - Cash: $6,022.05 (~60.1%)
 - Positions held: 7
-- Day P&L: -$7.81 (-0.08%) vs SPY -0.01%
-- Cumulative return: +0.13% vs SPY -0.50%
-- Late-run note: overnight Alpaca account snapshot at 2026-04-30 01:48 ET was $9,998.91; 2026-04-29 EOD equity above is reconstructed from 4/29 closes plus cash for date-accurate review.
+- Regime: **BULL** (9/12 universe tickers BULLISH)
+- Cumulative return: +0.22% vs SPY -0.50%
+- Delta vs SPY: +0.72 pp
+- Market status: trading day, normal close 16:00 ET, pre-open snapshot
 
-## Open Positions (2026-04-29 close)
+## Open Positions (live pre-open prices)
 
-| Ticker | Qty | Avg Entry | Close | Unrlzd P&L | Hard Stop | % Above Stop |
-|--------|-----|-----------|-------|------------|-----------|--------------|
-| AAPL | 1.86 | $268.81 | $270.15 | +$2.49 (+0.50%) | $247.31 | 8.46% |
-| AMZN | 1.91 | $260.99 | $263.22 | +$4.26 (+0.85%) | $240.11 | 8.78% |
-| GOOGL | 1.44 | $346.55 | $350.27 | +$5.36 (+1.07%) | $318.83 | 8.98% |
-| META | 0.73 | $675.94 | $669.47 | -$4.72 (-0.96%) | $621.86 | 7.11% |
-| MSFT | 2.35 | $422.20 | $424.80 | +$6.12 (+0.62%) | $388.42 | 8.56% |
-| NVDA | 2.38 | $209.45 | $209.35 | -$0.24 (-0.05%) | $192.69 | 7.96% |
-| QQQ | 0.75 | $661.81 | $661.59 | -$0.17 (-0.03%) | $608.87 | 7.97% |
+| Ticker | Qty | Avg Entry | Current | Unrlzd P&L | Effective Stop | Status |
+|--------|-----|-----------|---------|------------|----------------|--------|
+| AAPL | 1.86 | $268.81 | $271.61 | +$5.21 (+1.04%) | $247.31 | PASS |
+| AMZN | 1.91 | $260.99 | $272.90 | +$22.75 (+4.56%) | $240.11 | PASS |
+| GOOGL | 1.44 | $346.55 | $377.54 | +$44.63 (+8.94%) | $318.83 | PASS |
+| META | 0.73 | $675.94 | $609.18 | -$48.73 (-9.88%) | $621.86 | **HARD STOP TRIGGERED** |
+| MSFT | 2.35 | $422.20 | $418.40 | -$8.92 (-0.90%) | $388.42 | PASS |
+| NVDA | 2.38 | $209.45 | $210.95 | +$3.57 (+0.72%) | $192.69 | PASS |
+| QQQ | 0.75 | $661.81 | $666.31 | +$3.37 (+0.68%) | $608.87 | PASS |
 
-## RS_spread State (for next session)
+## RS_spread State (for next routine)
 
 | Ticker | RS_spread Today | Prior Session | Two Sessions Ago | Trend | Counter / Flag |
 |--------|-----------------|---------------|------------------|-------|----------------|
-| AAPL | -0.25% | +2.15% | n/a | BULLISH | RS neutral; no exit counter |
-| AMZN | +4.25% | +1.78% | +4.54% | BULLISH | Improving; counter 0 |
+| AAPL | -0.25% | +2.15% | n/a | BULLISH | RS neutral; hold-only |
+| AMZN | +4.25% | +1.78% | +4.54% | BULLISH | High conviction; add candidate |
 | GOOGL | +2.21% | +2.58% | +4.76% | BULLISH | RS_MOMENTUM_DECAY |
-| META | -2.02% | -1.15% | +2.63% | BULLISH | SOFT EXIT TOMORROW; RS_MOMENTUM_DECAY |
-| MSFT | +1.59% | +6.76% | +6.32% | BULLISH | Positive but sharply weaker; counter 0 |
+| META | -2.02% | -1.15% | +2.63% | BULLISH | HARD STOP + RS 2-session negative + RS_MOMENTUM_DECAY |
+| MSFT | +1.59% | +6.76% | +6.32% | BULLISH | Positive but weaker; hold |
 | NVDA | +3.59% | +5.98% | +10.18% | BULLISH | RS_MOMENTUM_DECAY |
-| QQQ | +2.13% | +2.12% | +3.35% | BULLISH | Stable; counter 0 |
+| QQQ | +2.13% | +2.12% | +3.35% | BULLISH | Stable; hold |
 
 ## Stop / Trailing Context
 
-- No hard-stop or trailing-stop triggers were missed.
+- `META` is below its effective stop pre-open. Queue market-sell at next execution.
 - No trailing stops active; no ticker is >10% above avg entry.
-- `state/position-highs.json` updates from 2026-04-29 closes:
-  - AAPL `high_close` -> $270.15
-  - AMZN `high_close` -> $263.22
-  - GOOGL `high_close` -> $350.27
+- `state/position-highs.json` required no change from the 2026-04-29 close set.
 
-## Soft Exit Flags for Next Execution
+## Queued Intents for Next Execution
 
-1. META — sell intent for next execution due to RS_spread < -1% for a second consecutive session (-1.15% -> -2.02%).
-
-## Near-Stop Warnings
-
-- None. Closest name is META, still 7.11% above its effective stop.
-
-## Preliminary Intent for Tomorrow
-
-1. Pre-market: confirm META sell intent remains active unless a higher-priority hard stop supersedes it.
-2. Recheck GOOGL and NVDA first for additional signal weakness because both now carry RS_MOMENTUM_DECAY.
-3. Hold AAPL, AMZN, MSFT, and QQQ unless overnight bars flip trend or RS thresholds.
+1. META — sell entire position (hard stop has priority over soft-exit logic).
+2. AMZN — add toward 8% target size if execution snapshot still confirms bullish trend / positive RS posture from pre-market work.
+3. XLE — open new position toward 8% target size if execution snapshot still confirms pre-market signal.
+4. Hold AAPL, GOOGL, MSFT, NVDA, and QQQ. Do not add to GOOGL or NVDA while RS_MOMENTUM_DECAY remains active.
 
 ## Open Contradictions
 

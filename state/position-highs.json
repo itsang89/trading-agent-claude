@@ -1,7 +1,7 @@
 {
   "AAPL": {"high_close": 273.74, "entry_price": 268.81, "last_updated": "2026-04-30"},
-  "AMZN": {"high_close": 263.22, "entry_price": 260.55701, "last_updated": "2026-04-30"},
-  "GOOGL": {"high_close": 383.04, "entry_price": 346.55, "last_updated": "2026-04-30"},
-  "QQQ": {"high_close": 665.93, "entry_price": 661.814, "last_updated": "2026-04-30"},
-  "XLE": {"high_close": 59.32, "entry_price": 58.98, "last_updated": "2026-04-30"}
+  "AMZN": {"high_close": 265.04, "entry_price": 260.55701, "last_updated": "2026-04-30"},
+  "GOOGL": {"high_close": 384.99, "entry_price": 346.55, "last_updated": "2026-04-30"},
+  "QQQ": {"high_close": 667.61, "entry_price": 661.814, "last_updated": "2026-04-30"},
+  "XLE": {"high_close": 59.63, "entry_price": 58.98, "last_updated": "2026-04-30"}
 }

@@ -276,3 +276,11 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - All journal, state, and position-highs files are committed locally and will push when credentials are restored.
 
 [2026-04-30 execution] git push origin HEAD:main returned 403 (permission denied). All changes are committed and pushed to claude/laughing-cray-2QNn6. Operator action needed to merge to main.
+
+## EOD Email Content Error — 2026-04-30 EOD Run (2026-05-01)
+- **Date Logged:** 2026-05-01
+- **Routine:** end-of-day-review (for 2026-04-30 market)
+- **Model Used:** opencode/hy3-preview-free
+- **Error:** First email sent (Step 11) used stale `/tmp/trading_email.txt` content from 2026-04-30 mid-session run instead of current EOD content. Title was correct ("Trading Agent EOD — 2026-04-30") but body matched mid-session summary.
+- **Root Cause:** `/tmp/trading_email.txt` was not properly overwritten by `write` tool before `send_email.py` read it. Second email (using `bash` `cat >` + separate `_eod.txt` file) sent correct EOD content successfully.
+- **Fix for Future:** Always use `bash` with `cat > /tmp/file << 'EOF'` to write temp email files, then verify with `cat` before sending. Avoid `write` tool for `/tmp` paths.

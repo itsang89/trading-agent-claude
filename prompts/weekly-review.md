@@ -52,12 +52,23 @@ Note any recurring themes — both positive (patterns to continue) and negative 
 For each day this week: did execution match pre-market intent?
 List any unexplained divergences, missed signals, or incorrect order placements.
 
+### Step 7.5 — Prior Change Impact Check
+Skip this step if this is Week 1 (no prior weekly reviews exist).
+
+Read all prior `learnings/{YYYY}-W{WW}-week{N}.md` files and the LEARNED_BEHAVIORS block already loaded in Step 2. For every strategy change or behavioral rule added in prior weekly reviews:
+1. Compare week-over-week SPY outperformance before vs after the change was implemented (use metrics/daily-metrics.csv)
+2. **Before drawing any conclusion**, explicitly state the sample size (number of trading days since the change). If fewer than 10 trading days (2 weeks) have passed, write "INSUFFICIENT DATA — [N] days, no conclusion drawn" and do not flag the change as ineffective. Market noise dominates over 5 days; do not revert changes on 1 week of evidence.
+3. Only flag a change as ineffective if it has underperformed vs SPY for **2 or more consecutive weeks** with at least 10 trading days of data
+4. Propose reverting or adjusting only changes that meet the threshold in item 3
+5. Log results in the "Prior Changes Impact" journal section (Step 9)
+
 ### Step 8 — Flaw & Gap Analysis
 Cross-reference outputs from Steps 5, 6, 7 to identify performance-limiting issues:
 1. **Execution Gaps**: Missed entry/exit signals, delayed stop-losses, incorrect sizing, violated CLAUDE.md rules
 2. **Strategy Flaws**: Entry/exit rules too restrictive/loose, RS_spread thresholds misaligned, trailing stop not locking gains, conviction sizing tiers not matching signal strength
 3. **Routine Gaps**: Missed journal reads, incorrect tool usage, logging omissions (e.g., missing trade rationales for ≥10% positions)
 4. **Technical Gaps**: Recurring tool errors, email failures, validator rejections due to outdated code constraints
+5. **Repeated Mistakes**: Check if any identified flaw matches a prior week's LEARNED_BEHAVIOR rule or a gap addressed in a prior weekly review. If a flaw repeats across 2+ weeks, upgrade severity to CRITICAL regardless of original rating and require a more aggressive fix (e.g., rule update + strategy change, not just a note).
 
 For each gap/flaw:
 - Assign severity: CRITICAL (caused direct loss vs SPY), HIGH (reduced potential outperformance), MEDIUM (process inefficiency), LOW (cosmetic)
@@ -75,6 +86,7 @@ Required sections:
 - **Guardrail events**: Full accounting of rejections and stops
 - **Flaws & Gaps Identified**: List from Step 8, with severity and performance impact
 - **Strategy Changes**: Allowed changes implemented this session (see Step 11), or proposed changes sent to operator
+- **Prior Changes Impact**: Whether changes from prior weekly reviews improved or hurt SPY outperformance, with data backing from metrics/daily-metrics.csv. Write `N/A — Week 1` if no prior reviews exist.
 - **Week {N+1} posture**: Sector/ticker views going into next week
 - **Operator flag**: If any technical failure (per CLAUDE.md) occurred, write `TECHNICAL FAILURE DETECTED: [description]` at the top. Include missing journal files here.
 
@@ -100,10 +112,11 @@ Restrictions:
 
 For each allowed change:
 1. Cite the specific Step 8 gap/flaw as rationale
-2. Explain expected performance improvement (e.g., "Tighten RS_spread exit threshold from -1% to -0.5% to reduce losses from decaying momentum")
-3. Edit the target file immediately
-4. Verify the edit by re-reading the modified file to ensure no conflicts or errors
-5. Log the change in Step 9's "Strategy Changes" section
+2. Before implementing, fetch historical bars: run `python tools/get_bars.py <TICKER> 20` for held/universe tickers. Manually inspect whether the new rule would have triggered differently on that data vs the old rule — count specific instances where the outcome would have differed. Be honest: if the evidence is ambiguous or fewer than 3 clear cases exist, **default to no change** and log the uncertainty. Do not rationalize a change you cannot concretely support with the data. Hindsight bias is a known failure mode here — if you find yourself constructing a narrative rather than counting cases, stop.
+3. Explain the expected performance improvement and the specific data evidence (e.g., "new exit threshold would have avoided 2 of 3 losing exits last week; old threshold missed the signal by 0.3% in each case")
+4. Edit the target file immediately
+5. Verify the edit by re-reading the modified file to ensure no conflicts or errors
+6. Log the change in Step 9's "Strategy Changes" section
 
 #### Part B: Disallowed Changes (Propose to Operator)
 For changes to these targets, write a structured proposal to `notes-for-operator.md`:
@@ -111,6 +124,7 @@ For changes to these targets, write a structured proposal to `notes-for-operator
 - `tools/` files (hard limit changes in `validate_order.py` etc.)
 - `.env`, `INSTRUCTIONS.md`, `.gitignore`
 - `state/experiment-config.json` (experiment parameters)
+- `prompts/*.md` (routine prompts, if instruction clarity or workflow gaps are identified)
 
 Proposal format:
 ```

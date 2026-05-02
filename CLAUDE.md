@@ -218,6 +218,23 @@ Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.m
 - [W1|HIGH] `tools/send_email.py` is unreliable — it failed in all 6 routine runs this week across three distinct error modes (IPv6, smtplib compat, missing SendGrid key). Treat email delivery as a best-effort non-blocking side channel: attempt once at the end of the routine, log any failure to `notes-for-operator.md`, and continue. Never retry email within the same routine, never block journal writing / state updates / git commit on email success, and never create an `operator-flag` in the weekly journal solely for email failure.
   Source: `notes-for-operator.md` entries on 2026-04-23 (×3) and 2026-04-24 (×3) document 6 consecutive email failures; every routine nonetheless committed successfully.
 
+---
+
+*Week 1 (experiment) lessons added 2026-05-02 by weekly-review routine*
+
+### Sizing and Risk
+
+- [W1|MEDIUM] Overnight gaps can cause hard stop fills significantly worse than the stop price. When a position's RS_spread turns negative in session 1 (first NEGATIVE flag), consider proactively trimming toward a lower conviction tier rather than holding full size through the 2-session exit confirmation. The 2-session rule protects against false exits, but does not protect against overnight gap risk on deteriorating names.
+  Source: META triggered hard stop at pre-open $609.18 on 4/30 (prior close ~$669, stop $621.86) — a $60 overnight gap resulting in −10.62% realized loss instead of the intended −8% maximum cap.
+
+- [W1|MEDIUM] When adding shares to a position that currently has an ACTIVE trailing stop, document explicitly in the sizing rationale that the add will DEACTIVATE the trailing stop (avg_entry rises → trailing threshold rises above current high_close). State whether you accept losing the trailing protection given current position size and signals. For positions >10% of equity, this deactivation is a meaningful risk increase.
+  Source: 5/1 GOOGL add from 1.44→3.41 shares raised avg_entry $346.55→$366.98, moving trailing activation threshold from $381.21 to $403.68 — deactivating an active trailing stop on a 13% position.
+
+### Behavioral Failure Modes
+
+- [W1|HIGH] When a routine runs under a model different from the scheduled model (e.g., any non-sonnet model for daily routines, or non-opus for weekly review), document the actual model in the journal header AND append a note to `notes-for-operator.md` immediately. Never suppress model identity — the operator tracks behavioral consistency across models.
+  Source: 5 of 10 routine sessions this week (4/30 midsession, 4/30 EOD, 5/1 pre-market, 5/1 execution, 5/1 EOD) ran under "opencode/hy3-preview-free" instead of claude-sonnet-4-6; model deviation was only discoverable by reading journal headers.
+
 <!-- LEARNED_BEHAVIORS:END -->
 
 ---

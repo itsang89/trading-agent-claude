@@ -285,3 +285,43 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - **Root Cause:** `/tmp/trading_email.txt` was not properly overwritten by `write` tool before `send_email.py` read it. Second email (using `bash` `cat >` + separate `_eod.txt` file) sent correct EOD content successfully.
 - **Fix for Future:** Always use `bash` with `cat > /tmp/file << 'EOF'` to write temp email files, then verify with `cat` before sending. Avoid `write` tool for `/tmp` paths.
 Sat May  2 18:45:16 HKT 2026: EOD 2026-05-01 email failed - send_email.py cannot find /tmp/trading_email.txt despite file existing. Non-blocking, continuing.
+
+---
+
+## Weekly Review Proposals — Week 1 (2026-05-02)
+
+### PROPOSED CHANGE (Week 1) — #1
+- **Target:** Harness/scheduler configuration (not a repo file)
+- **Rationale:** GAP-001 — 5 of 10 routine sessions ran under "opencode/hy3-preview-free" instead of scheduled claude-sonnet-4-6 (4/30 midsession, 4/30 EOD, 5/1 pre-market, 5/1 execution, 5/1 EOD). The weekly review itself ran under sonnet instead of claude-opus-4-7 (operator-selected this session).
+- **Proposed change:** Verify harness/cron configuration specifies the correct model for each routine. For daily routines: claude-sonnet-4-6. For weekly-review: claude-opus-4-7. Investigate what caused hy3 model to be selected.
+- **Expected SPY outperformance impact:** Unknown — behavioral consistency across models not verified.
+- **Request:** Operator verify and fix model scheduling configuration.
+
+### PROPOSED CHANGE (Week 1) — #2
+- **Target:** Git credentials / push pipeline
+- **Rationale:** GAP-005 — 4/29 pre-market commit was NOT pushed to remote (403 permission error). 4/30 execution pushed to `claude/laughing-cray-2QNn6` instead of main. Remote history is incomplete; operator cannot review diffs via `git diff CLAUDE.md`.
+- **Proposed change:** Fix git credentials or proxy configuration so all commits push to `origin main` without 403 errors.
+- **Expected SPY outperformance impact:** N/A — operational integrity, not performance.
+- **Request:** Operator fix git push pipeline and verify all local commits are on main.
+
+### PROPOSED CHANGE (Week 1) — #3
+- **Target:** Cron/scheduler for midsession routine
+- **Rationale:** GAP-002 — Midsession routine ran on only 1 of 5 trading days (4/30 only). The 4/30 midsession correctly caught MSFT and NVDA trend breaks that would not have been flagged until EOD. Missing midsession runs on 4/28, 4/29, 5/1 left intraday risk unmonitored.
+- **Proposed change:** Verify `make run-midsession` is scheduled at 1:30 PM ET Monday–Friday and is executing. Check for cron entry or trigger failure.
+- **Expected SPY outperformance impact:** MEDIUM — intraday trend-break exits are the primary mechanism to avoid holding deteriorating positions into close.
+- **Request:** Operator fix midsession scheduler.
+
+### PROPOSED CHANGE (Week 1) — #4
+- **Target:** `tools/append_metrics.py` or EOD routine trigger
+- **Rationale:** GAP-004 — metrics/daily-metrics.csv only has 3 rows (4/23, 4/24, 4/28) out of 5+ trading days. Missing 4/29, 4/30, 5/1. This makes quantitative performance tracking unreliable. Additionally, the 4/28 metrics row logged equity $10,020.92 but was for 4/27 data (late run).
+- **Proposed change:** Ensure `append_metrics.py` runs automatically after each EOD routine. Fix the late-run date stamping (use the market date, not the wall-clock date when the tool runs).
+- **Expected SPY outperformance impact:** N/A — operational tracking.
+- **Request:** Operator fix metrics automation.
+
+### PROPOSED CHANGE (Week 1) — #5
+- **Target:** `state/strategy.md` — trailing stop preservation on adds (PROPOSED, not self-implemented due to insufficient data)
+- **Rationale:** GAP-008 — When adding shares to a position with an ACTIVE trailing stop, the strategy mechanics deactivate the trailing stop (avg_entry rises, raising the activation threshold above current high_close). On 5/1, GOOGL's active trailing stop (floor $346.49) was replaced by a hard stop only ($337.62) after the add. For positions >10% of equity, this creates meaningful unprotected downside.
+- **Proposed change:** Add to strategy.md: "When adding to a position where a trailing stop is ACTIVE, compute `preserved_floor = max(hard_stop_price, current_trailing_stop_price)` and treat this as the effective minimum stop regardless of the avg_entry recalculation. Log the preserved floor in position-highs.json as a `stop_floor` field."
+- **Expected SPY outperformance impact:** LOW positive (prevents one edge case from undoing earned trailing stop protection) but needs more than 1 case to confirm. Flagging for operator consideration.
+- **Request:** Operator review and approve (or reject) this change before Week 2.
+

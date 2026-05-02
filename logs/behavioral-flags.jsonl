@@ -7,3 +7,6 @@
 {"date":"2026-04-30","routine":"pre-market-research","flag_type":"RS_MOMENTUM_DECAY","ticker":"NVDA","context":"RS_spread declining 3 sessions: 10.18% -> 5.98% -> 3.59%"}
 {"timestamp":"2026-04-30T13:49:00Z","routine":"market-open-execution","event":"STOP_LOSS_TRIGGERED","ticker":"META","avg_entry":675.936,"hard_stop":621.86,"current_price":604.17,"loss_pct":-10.62,"order_id":"b2d86b50-866c-4725-ac08-9de5f3ff717f","note":"Hard stop at 8% below avg_entry. Also RS negative 2 consecutive sessions."}
 {"timestamp": "2026-05-01T17:44:47+08:00", "routine": "end-of-day-review", "market_date": "2026-04-30", "model": "opencode/hy3-preview-free", "flag_type": "EMAIL_CONTENT_MISMATCH", "detail": "First email sent with stale mid-session content instead of EOD content. Title correct, body wrong. Second email sent correctly."}
+{"date":"2026-05-01","routine":"end-of-day-review","flag_type":"RS_MOMENTUM_DECAY","ticker":"AMZN","context":"RS_spread declining 3 sessions: 4.25% -> 3.73% -> 0.68%"}
+{"date":"2026-05-01","routine":"end-of-day-review","flag_type":"RS_MOMENTUM_DECAY","ticker":"QQQ","context":"RS_spread declining 3 sessions: 2.13% -> 1.84% -> 0.64%"}
+{"date":"2026-05-01","routine":"end-of-day-review","flag_type":"RS_MOMENTUM_DECAY","ticker":"XLE","context":"RS_spread declining 3 sessions: 4.22% -> 2.94% -> -1.64%"}

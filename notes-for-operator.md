@@ -284,3 +284,4 @@ Append-only. Each note starts with `## [YYYY-MM-DD HH:MM ET]`.
 - **Error:** First email sent (Step 11) used stale `/tmp/trading_email.txt` content from 2026-04-30 mid-session run instead of current EOD content. Title was correct ("Trading Agent EOD — 2026-04-30") but body matched mid-session summary.
 - **Root Cause:** `/tmp/trading_email.txt` was not properly overwritten by `write` tool before `send_email.py` read it. Second email (using `bash` `cat >` + separate `_eod.txt` file) sent correct EOD content successfully.
 - **Fix for Future:** Always use `bash` with `cat > /tmp/file << 'EOF'` to write temp email files, then verify with `cat` before sending. Avoid `write` tool for `/tmp` paths.
+Sat May  2 18:45:16 HKT 2026: EOD 2026-05-01 email failed - send_email.py cannot find /tmp/trading_email.txt despite file existing. Non-blocking, continuing.

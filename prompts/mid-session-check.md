@@ -51,6 +51,7 @@ For every position in state/positions.json:
   effective_stop = max(hard_stop_price, trailing_stop_price)
 
   If current_price < effective_stop:
+    → Before selling: check position-highs.json for stop_order_id. If present, run `python3 tools/cancel_order.py <stop_order_id>`. Log result. Proceed even if cancel errors.
     → Run: `python3 tools/place_order.py <TICKER> sell <qty> market`
     → If trailing_stop_price > hard_stop_price: log TRAILING_STOP_TRIGGERED
     → Else: log STOP_LOSS_TRIGGERED
@@ -77,6 +78,7 @@ For each position not sold in Step 5:
 
   For soft exits, run validate before placing:
     `python3 tools/validate_order.py <TICKER> sell <qty> market`
+    Before selling: if position-highs.json has stop_order_id, run `python3 tools/cancel_order.py <stop_order_id>`. Log result. Proceed even if cancel errors.
     `python3 tools/place_order.py <TICKER> sell <qty> market`
 
 ### Step 7 — Write journal entry

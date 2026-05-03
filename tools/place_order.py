@@ -4,16 +4,22 @@ place_order.py — Place an order through the validator, then Alpaca.
 All orders pass through the guardrail validator before reaching Alpaca.
 
 Usage:
-    python tools/place_order.py <TICKER> <side> <qty> <order_type> [limit_price]
+    python tools/place_order.py <TICKER> <side> <qty> <order_type> [limit_price] [--stop-pct PCT]
 
 Examples:
-    python tools/place_order.py SPY buy 5 market
-    python tools/place_order.py SPY buy 5 limit 540.00
-    python tools/place_order.py SPY sell 5 market
+    python tools/place_order.py GOOGL buy 2 market
+    python tools/place_order.py GOOGL buy 2 market --stop-pct 0.08
+    python tools/place_order.py GOOGL buy 2 limit 380.00 --stop-pct 0.08
+    python tools/place_order.py GOOGL sell 2 market
+
+For BUY orders with --stop-pct: immediately places a matching GTC stop-sell order
+at price_basis * (1 - stop_pct). Returns stop_order_id and stop_price in result.
+If stop placement fails, result includes stop_order_warning (non-blocking).
 
 Returns JSON with order details or structured rejection.
 Appends successful orders to trades/trades.csv.
 """
+import argparse
 import csv
 import json
 import os
@@ -28,7 +34,7 @@ from tools.lib.validator import validate
 from tools.lib.alpaca_client import get_trading_client, get_data_client
 from tools.get_positions import get_data as get_positions_data
 from tools.get_account import get_data as get_account_data
-from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest
+from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest, StopOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.requests import StockLatestQuoteRequest
 from alpaca.data.enums import DataFeed
@@ -51,18 +57,38 @@ def _append_trade(row: dict):
 
 
 def main():
-    if len(sys.argv) < 5:
+    parser = argparse.ArgumentParser(
+        description="Place an order through the validator, then Alpaca.",
+        add_help=False,
+    )
+    parser.add_argument("ticker", type=str)
+    parser.add_argument("side", type=str, choices=["buy", "sell"])
+    parser.add_argument("qty", type=float)
+    parser.add_argument("order_type", type=str, choices=["market", "limit"])
+    parser.add_argument("limit_price", nargs="?", type=float, default=None)
+    parser.add_argument(
+        "--stop-pct",
+        type=float,
+        default=None,
+        metavar="PCT",
+        help="BUY only: place a GTC stop-sell at fill_price*(1-PCT) after the buy fills (e.g. 0.08 for 8%%)",
+    )
+
+    try:
+        args = parser.parse_args()
+    except SystemExit:
         print(
-            "Usage: python tools/place_order.py <TICKER> <side> <qty> <order_type> [limit_price]",
+            "Usage: python tools/place_order.py <TICKER> <side> <qty> <order_type> [limit_price] [--stop-pct PCT]",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    ticker = sys.argv[1].upper()
-    side = sys.argv[2].lower()
-    qty = float(sys.argv[3])
-    order_type = sys.argv[4].lower()
-    limit_price = float(sys.argv[5]) if len(sys.argv) > 5 else None
+    ticker = args.ticker.upper()
+    side = args.side.lower()
+    qty = args.qty
+    order_type = args.order_type.lower()
+    limit_price = args.limit_price
+    stop_pct = args.stop_pct
 
     if order_type == "limit" and limit_price is None:
         result = {
@@ -84,7 +110,7 @@ def main():
         print(json.dumps(result, indent=2), file=sys.stderr)
         sys.exit(1)
 
-    # For limit orders use the limit price; otherwise fetch a live quote for price estimate
+    # Price basis: limit price if known, otherwise fetch live quote
     if limit_price:
         estimated_price = limit_price
     else:
@@ -112,7 +138,7 @@ def main():
         print(json.dumps(validation, indent=2))
         return validation
 
-    # Place order via Alpaca
+    # Place primary order via Alpaca
     client = get_trading_client()
     alpaca_side = OrderSide.BUY if side == "buy" else OrderSide.SELL
 
@@ -124,7 +150,7 @@ def main():
                 side=alpaca_side,
                 time_in_force=TimeInForce.DAY,
             )
-        elif order_type == "limit":
+        else:
             request = LimitOrderRequest(
                 symbol=ticker,
                 qty=qty,
@@ -132,16 +158,6 @@ def main():
                 time_in_force=TimeInForce.DAY,
                 limit_price=limit_price,
             )
-        else:
-            result = {
-                "passed": False,
-                "rule": "ORDER_TYPE",
-                "current": order_type,
-                "limit": ["market", "limit"],
-                "detail": f"Unsupported order type: {order_type}",
-            }
-            print(json.dumps(result, indent=2))
-            return result
 
         order = client.submit_order(request)
 
@@ -170,6 +186,26 @@ def main():
             "status": str(order.status),
             "routine": os.environ.get("CURRENT_ROUTINE", ""),
         })
+
+        # Place paired GTC stop-sell if requested (BUY orders only)
+        if stop_pct is not None and side == "buy":
+            if estimated_price is None:
+                result["stop_order_warning"] = "stop order not placed — could not determine price basis (no quote)"
+            else:
+                stop_price = round(estimated_price * (1 - stop_pct), 2)
+                try:
+                    stop_request = StopOrderRequest(
+                        symbol=ticker,
+                        qty=qty,
+                        side=OrderSide.SELL,
+                        time_in_force=TimeInForce.GTC,
+                        stop_price=stop_price,
+                    )
+                    stop_order = client.submit_order(stop_request)
+                    result["stop_order_id"] = str(stop_order.id)
+                    result["stop_price"] = stop_price
+                except Exception as e:
+                    result["stop_order_warning"] = f"stop order placement failed: {e}"
 
         print(json.dumps(result, indent=2))
         return result

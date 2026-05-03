@@ -43,6 +43,9 @@ For every position in state/positions.json:
   effective_stop = max(hard_stop_price, trailing_stop_price)
 
   If current_price < effective_stop:
+    Before selling: check position-highs.json for stop_order_id.
+    If stop_order_id exists: run `python3 tools/cancel_order.py <stop_order_id>`
+      If cancel returns error, log the error and proceed with sell anyway.
     Run: `python3 tools/place_order.py <TICKER> sell <qty> market`
     If passed: remove ticker from position-highs.json; log TRAILING_STOP_TRIGGERED or STOP_LOSS_TRIGGERED
     If rejected: log GUARDRAIL_REJECTION, write to notes-for-operator.md
@@ -73,22 +76,33 @@ For each buy intent from pre-market:
 ### Step 8 — Validate and execute intents
 For each buy/sell intent from pre-market journal that passed Step 7:
   First run: `python3 tools/validate_order.py <TICKER> <side> <qty> <type>`
-  If passed: run: `python3 tools/place_order.py <TICKER> <side> <qty> <type>`
   If rejected: log the structured rejection to behavioral-flags.jsonl, do NOT retry with tweaked order.
 
   Sizing: use conviction tiers from state/strategy.md. Compute qty from target dollar size:
     target_value = equity * target_pct
     qty = floor(target_value / current_price)
 
-  After a successful BUY for a new ticker:
-    Add to state/position-highs.json: {"high_close": fill_price, "entry_price": fill_price, "last_updated": today}
+  **NEW position BUY (ticker not currently held):**
+    Run: `python3 tools/place_order.py <TICKER> buy <qty> market --stop-pct 0.08`
+    If passed:
+      - Add to state/position-highs.json: {"high_close": fill_price, "entry_price": fill_price, "last_updated": today, "stop_order_id": <from result>, "stop_price": <from result>}
+      - If result has stop_order_warning instead of stop_order_id: log to journal and notes-for-operator.md; add entry without stop fields.
+    If rejected: log rejection, no position-highs.json update.
 
-  After adding shares to an existing position (confirmed fill):
-    Update entry_price in position-highs.json to the new avg_entry from get_positions.
-    Keep high_close unchanged if it's already above the new avg_entry.
+  **ADD to existing position (ticker already held):**
+    1. Cancel old stop: if position-highs.json has stop_order_id, run `python3 tools/cancel_order.py <stop_order_id>`. Log cancel result. Proceed even if cancel errors.
+    2. Place add: `python3 tools/place_order.py <TICKER> buy <qty> market` (no --stop-pct)
+    3. After add fills: run `python3 tools/get_positions.py` to get new avg_entry_price.
+    4. Compute new_stop_price = round(new_avg_entry * 0.92, 2)
+    5. Place new stop: `python3 tools/place_stop_order.py <TICKER> <total_qty> <new_stop_price>`
+    6. Update position-highs.json: set entry_price = new_avg_entry, stop_order_id = <from result>, stop_price = new_stop_price. Keep high_close unchanged if already above new avg_entry.
+    7. If place_stop_order returns placed=false: log to notes-for-operator.md; update position-highs.json without stop fields.
 
-  After a successful SELL (full exit):
-    Remove ticker from state/position-highs.json.
+  **SELL intent (full or partial exit):**
+    Before placing sell: if position-highs.json has stop_order_id, run `python3 tools/cancel_order.py <stop_order_id>`. Log result. Proceed even if cancel errors.
+    Run: `python3 tools/place_order.py <TICKER> sell <qty> market`
+    If passed (full exit): remove ticker from state/position-highs.json.
+    If passed (partial): update qty in position-highs.json; place new stop for remaining qty at same stop_price.
 
 ### Step 9 — Get final quotes for placed orders
 For each order placed: `python3 tools/get_quote.py <TICKER>` (confirm fills are reasonable)

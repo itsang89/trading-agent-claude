@@ -54,6 +54,7 @@ All three conditions must be true to open a new position:
 
 **Ranking:** When multiple tickers qualify, rank by RS_spread descending. Buy highest conviction first.
 **Selectivity:** RS_spread 0–1% is borderline — only enter if the portfolio is lightly invested and no better signal exists. Prefer to skip borderline entries.
+**Transitional regime cap:** On the first 2 sessions after a regime shift from BEAR/MIXED to BULL, or when regime is MIXED, limit new entries to the top 3 tickers by RS_spread per session. Do not open 5–6 positions simultaneously in a regime that hasn't confirmed itself — correlated entries create correlated drawdown if the shift reverses quickly.
 
 ---
 
@@ -66,6 +67,13 @@ All three conditions must be true to open a new position:
 | 3 | RS_spread < −1% for 2 consecutive sessions | Flag at EOD — sell at next morning execution |
 
 **RS Counter Reset Rule:** The 2-session RS exit counter resets ONLY when RS_spread > 0%. A bounce to −0.8% does NOT reset the counter. A ticker must show genuine relative strength (positive spread) to clear the warning.
+
+**RS session-1 trim:** When a held position's RS_spread first turns NEGATIVE (session 1 of the 2-session exit confirmation), trim the position to the lower conviction tier ceiling immediately — do not wait until session 2 to reduce exposure:
+- Very-high-conviction (sized >13%): trim to 13%
+- High-conviction (sized >8%): trim to 8%
+- Standard or below: no trim; monitor and wait for session-2 confirmation
+
+The full exit still waits for 2-session confirmation. This rule limits overnight gap risk during the confirmation window without abandoning the position on a potential false signal.
 
 **Trailing stop:** Tracked in `state/position-highs.json`. Logic:
 ```
@@ -117,6 +125,8 @@ No fixed default or maximum. Size reflects signal strength and regime context.
 | Mixed | 5–7 of 12 tickers | 25–40% — be selective |
 | Bear | <5 of 12 tickers | 50%+ — mostly cash, only highest RS names |
 
+**Cash accountability in bull regime:** When regime is BULL and cash > 35%, the pre-market journal MUST explicitly state why the cash isn't being deployed. "No qualifying signals above RS threshold" is acceptable. Silent accumulation is not — every idle dollar in a bull regime is a decision that costs return vs SPY. Diagnostic: if cash > 35% in bull regime AND ≥2 universe tickers have RS_spread > 2%, that is a sizing error — scale existing positions up toward tier ceilings or open new entries.
+
 **Sector concentration:** Hard code limit — ≤40% of equity in one GICS sector. Note: NVDA + MSFT + AAPL are all Information Technology; combined they cannot exceed 40%.
 
 ---
@@ -128,16 +138,23 @@ This file is the source of truth for trailing stop calculations. Every routine m
 **Schema:**
 ```json
 {
-  "NVDA": {"high_close": 215.50, "entry_price": 209.45, "last_updated": "2026-04-28"}
+  "NVDA": {
+    "high_close": 215.50,
+    "entry_price": 209.45,
+    "last_updated": "2026-04-28",
+    "stop_order_id": "abc-123-def-456",
+    "stop_price": 192.69
+  }
 }
 ```
+`stop_order_id` and `stop_price` are optional fields (absent on legacy entries). If absent, treat as no standing Alpaca stop.
 
 **Rules:**
-- **On new position open (execution routine):** Add entry with `high_close = fill_price`, `entry_price = fill_price`.
-- **On adding shares (execution):** Update `entry_price` to new avg_entry from get_positions. Keep `high_close` unchanged if it's already higher than the new avg_entry.
+- **On new position open (execution routine):** Use `place_order.py --stop-pct 0.08` — the buy and stop order are placed in one call. Store `stop_order_id` and `stop_price` from the result. If result has `stop_order_warning`, log it to notes-for-operator.md but continue.
+- **On adding shares (execution):** (1) Cancel old stop: `cancel_order.py <stop_order_id>`; (2) place add via `place_order.py` (no --stop-pct); (3) after add, fetch updated `avg_entry` from `get_positions`; (4) place new stop: `place_stop_order.py <TICKER> <total_qty> <avg_entry * 0.92>`; (5) update `entry_price`, `stop_order_id`, `stop_price` in position-highs.json. Keep `high_close` unchanged if it's already higher than the new avg_entry.
+- **On selling (any routine):** Before placing sell, cancel standing stop: `cancel_order.py <stop_order_id>`. If cancel returns error (order already filled/expired), log and proceed with sell anyway. Remove ticker from position-highs.json after confirmed sell.
 - **On price update (pre-market, mid-session, EOD):** After running get_bars, if `bars[-1]["close"] > high_close`, update `high_close` and `last_updated`.
-- **On position close (any routine):** Remove the ticker's entry from the file.
-- **If ticker missing from file but in positions:** Re-initialize using avg_entry_price from positions.json as both `high_close` and `entry_price`.
+- **If ticker missing from file but in positions:** Re-initialize using avg_entry_price from positions.json as both `high_close` and `entry_price`. Immediately place a stop via `place_stop_order.py` at `avg_entry * 0.92` and store the result.
 
 ---
 

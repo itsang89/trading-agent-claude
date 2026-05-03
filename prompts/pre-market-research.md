@@ -121,6 +121,27 @@ If RS_spread has declined each session for 3 consecutive sessions (even if still
 → Flag "RS DETERIORATING" in journal; do not add shares; be ready to exit at first signal failure.
 → Append to logs/behavioral-flags.jsonl: {"date":"...", "routine":"pre-market-research", "flag_type":"RS_MOMENTUM_DECAY", "ticker":"X", "context":"RS_spread declining 3 sessions: X% → Y% → Z%"}
 
+### Step 7e — Earnings & News Check (active from 2026-05-05)
+Skip this step entirely if today < 2026-05-05.
+
+**Earnings check** — run for every held ticker and the top 2 entry candidates from Step 7b:
+```
+python3 tools/get_earnings.py <TICKER>
+```
+- `flag = "EARNINGS_IMMINENT"` (≤2 days): do NOT add to this position; cap size at borderline tier (3–5%); note in journal.
+- `flag = "EARNINGS_THIS_WEEK"` (≤7 days): note in journal; prefer lower end of conviction tier; do not initiate a new full-size position.
+- No flag: no constraint from earnings.
+
+**News check** — run for every held ticker only:
+```
+python3 tools/get_news.py <TICKER> 5
+```
+Scan headlines for obvious negative catalysts: earnings miss, guidance cut, product recall, CEO departure, regulatory action, fraud allegation.
+- News alone does NOT trigger a sell. It is timing context only.
+- If signals say hold → hold, regardless of headlines.
+- If signals are borderline (e.g., RS_spread near −1%, or Trend near SMA) → negative news tips toward exit.
+- Note any significant headline (one line) in journal. Do not summarize every article.
+
 ### Step 8 — Read experiment config
 Read state/experiment-config.json — note current week number and model assignments.
 

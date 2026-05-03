@@ -325,3 +325,38 @@ Sat May  2 18:45:16 HKT 2026: EOD 2026-05-01 email failed - send_email.py cannot
 - **Expected SPY outperformance impact:** LOW positive (prevents one edge case from undoing earned trailing stop protection) but needs more than 1 case to confirm. Flagging for operator consideration.
 - **Request:** Operator review and approve (or reject) this change before Week 2.
 
+
+---
+
+## [2026-05-03 — Operator-directed change]
+
+**News tooling added for Week 2+ (active 2026-05-05).**
+
+Per operator instruction, two new tools and a prompt step were implemented to support timing-based news ingestion starting 2026-05-05, consistent with CLAUDE.md: "From 2026-05-05 onwards, news tools are permitted for timing decisions (macro calendar, earnings dates). Price/technical signals remain primary."
+
+### Changes made
+
+**`tools/get_earnings.py`** (new)
+- Source: `yfinance` (added to requirements.txt)
+- Usage: `python3 tools/get_earnings.py <TICKER>`
+- Returns: next earnings date, days until, flag (`EARNINGS_IMMINENT` ≤2d, `EARNINGS_THIS_WEEK` ≤7d, null otherwise)
+- Use case: pre-market only; EARNINGS_IMMINENT caps position at borderline tier and blocks adds.
+
+**`tools/get_news.py`** (new)
+- Source: Alpaca News API (uses existing ALPACA_API_KEY / ALPACA_API_SECRET — no new credentials)
+- Usage: `python3 tools/get_news.py <TICKER[,TICKER2,...]> [count]`
+- Returns: last N headlines (default 5) from past 7 days with headline, summary, source, published_at
+- Use case: scan held positions for obvious negative catalysts. News does NOT override signals.
+
+**`prompts/pre-market-research.md`** — Step 7e added
+- Inserted between Step 7d (RS momentum decay) and Step 8 (experiment config)
+- Guarded by date: step is skipped entirely before 2026-05-05
+- Earnings check: held + top-2 entry candidates
+- News check: held positions only
+
+**`requirements.txt`** — added `yfinance>=0.2.0`
+
+### Design decisions
+- No macro calendar tool: Alpaca news covers macro headlines; dedicated econ calendar scraping is unreliable
+- News for held positions only (not full universe) to control token cost per routine
+- News cannot trigger exits autonomously — it tips borderline signal decisions only

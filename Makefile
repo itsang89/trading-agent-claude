@@ -43,7 +43,7 @@ run-eod:
 	python3 tools/append_metrics.py
 
 run-weekly:
-	@bash scripts/run-routine.sh weekly-review --model claude-opus-4-7
+	@bash scripts/run-routine.sh weekly-review --model claude-sonnet-4-6
 
 # Extract this week's lessons and update CLAUDE.md
 # Run manually after reviewing the weekly journal entry

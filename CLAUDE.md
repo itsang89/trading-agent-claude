@@ -61,7 +61,9 @@ Log rejection and move on. Do not retry with a tweaked order.
 | `market-open-execution` | 9:45 AM ET, Mon–Fri | claude-sonnet-4-6 | `make run-execution` |
 | `mid-session-check` | 1:30 PM ET, Mon–Fri | claude-sonnet-4-6 | `make run-midsession` |
 | `end-of-day-review` | 4:30 PM ET, Mon–Fri | claude-sonnet-4-6 | `make run-eod` |
-| `weekly-review` | 5:00 PM ET, Friday | claude-opus-4-7 | `make run-weekly` |
+| `weekly-review` | 5:00 PM ET, Friday | claude-sonnet-4-6 | `make run-weekly` |
+
+**Model policy:** Any model may run any routine. The model column above is the default; the harness may use a different model. Always log the actual model used in the journal header — do not suppress it.
 
 **Before any routine:** call `get_market_status`. If `is_trading_day: false`, exit immediately with a log note.
 **Concurrency:** Check for `.lock` file. If it exists and is <30 min old, exit immediately.
@@ -232,8 +234,8 @@ Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.m
 
 ### Behavioral Failure Modes
 
-- [W1|HIGH] When a routine runs under a model different from the scheduled model (e.g., any non-sonnet model for daily routines, or non-opus for weekly review), document the actual model in the journal header AND append a note to `notes-for-operator.md` immediately. Never suppress model identity — the operator tracks behavioral consistency across models.
-  Source: 5 of 10 routine sessions this week (4/30 midsession, 4/30 EOD, 5/1 pre-market, 5/1 execution, 5/1 EOD) ran under "opencode/hy3-preview-free" instead of claude-sonnet-4-6; model deviation was only discoverable by reading journal headers.
+- [W1|HIGH] Always document the actual model used in each journal header. Any model is acceptable for any routine (operator policy 2026-05-03: model flexibility allowed). Never suppress model identity — the operator tracks behavioral consistency across models. Do NOT write a notes-for-operator.md entry solely for a model difference; just log it in the header.
+  Source: 5 of 10 routine sessions this week ran under "opencode/hy3-preview-free" instead of claude-sonnet-4-6; deviation was only discoverable via journal headers. Operator subsequently approved open model policy.
 
 <!-- LEARNED_BEHAVIORS:END -->
 

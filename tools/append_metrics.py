@@ -21,7 +21,7 @@ import csv
 import json
 import os
 import sys
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytz
@@ -38,8 +38,7 @@ _TRADES_CSV = _REPO_ROOT / "trades" / "trades.csv"
 _ET = pytz.timezone("America/New_York")
 
 
-def _count_today_trades():
-    today = date.today().isoformat()
+def _count_today_trades(trade_date: str):
     placed = 0
     rejected = 0
     if not _TRADES_CSV.exists():
@@ -47,7 +46,7 @@ def _count_today_trades():
     with open(_TRADES_CSV) as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if row.get("date") == today:
+            if row.get("date") == trade_date:
                 if row.get("status", "").lower() in ("rejected", "failed"):
                     rejected += 1
                 else:
@@ -96,9 +95,6 @@ def main():
     positions = trading_client.get_all_positions()
     positions_held = len(positions)
 
-    # Orders today
-    orders_placed, orders_rejected = _count_today_trades()
-
     # SPY data
     now_utc = datetime.now(pytz.UTC)
     spy_request = StockBarsRequest(
@@ -117,6 +113,19 @@ def main():
     spy_close = float(spy_bars[-1].close)
     spy_prev_close = float(spy_bars[-2].close)
     spy_day_return = (spy_close - spy_prev_close) / spy_prev_close * 100
+
+    # Use the last bar's trading date, not wall-clock today (guards against late runs)
+    last_bar_date = spy_bars[-1].timestamp.astimezone(_ET).date()
+    today_str = last_bar_date.isoformat()
+    orders_placed, orders_rejected = _count_today_trades(today_str)
+
+    # Deduplication: skip if a row for this trading date already exists
+    if _METRICS_CSV.exists():
+        with open(_METRICS_CSV) as f:
+            existing_dates = {row.get("date") for row in csv.DictReader(f)}
+        if today_str in existing_dates:
+            print(json.dumps({"skipped": True, "reason": f"row for {today_str} already exists"}))
+            return None
 
     # Cumulative returns
     start_equity = _get_start_equity() or equity
@@ -139,7 +148,6 @@ def main():
     day_pnl_abs = equity - prev_equity
     day_pnl_pct = day_pnl_abs / prev_equity * 100 if prev_equity else 0
 
-    today_str = date.today().isoformat()
     row = {
         "date": today_str,
         "equity": round(equity, 2),

@@ -97,6 +97,8 @@ No fixed default or maximum. Size reflects signal strength and regime context.
 
 **Adding to a winner:** If a held position is below its conviction-tier target AND both signals are still positive, scale up toward the tier ceiling. Recalculate avg_entry and stop-loss trigger after adding. After adding shares, update `state/position-highs.json` entry_price to the new avg_entry (keep high_close unchanged if it's higher).
 
+**Trailing stop preservation on adds:** Before adding to a position with an ACTIVE trailing stop, compute `preserved_floor = max(hard_stop_price, current_trailing_stop_price)`. After the add raises avg_entry and deactivates the trailing stop, record `preserved_floor` as a `stop_floor` field in `state/position-highs.json` for that ticker. Treat `stop_floor` as the minimum effective stop until the trailing stop reactivates (high_close exceeds new threshold). Log explicitly in the sizing rationale that the trailing stop was deactivated and what the preserved floor is.
+
 **Sizing down:** If a held position's RS_spread falls into a lower tier, consider trimming to the new tier ceiling rather than waiting for a full exit signal.
 
 **Always document:** Any position sized ≥10% requires explicit written rationale in the journal.

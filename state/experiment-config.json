@@ -1,9 +1,9 @@
 {
   "experiment_start_date": "2026-04-27",
   "experiment_end_date": "2026-05-22",
-  "current_week": 1,
+  "current_week": 2,
   "notional_capital": 10000,
   "model_daily": "claude-sonnet-4-6",
-  "model_weekly": "claude-opus-4-7",
+  "model_weekly": "claude-sonnet-4-6",
   "notes": "Update current_week each Monday. Operator updates this file \u2014 LLM reads it, never writes it."
 }

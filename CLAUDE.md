@@ -72,19 +72,7 @@ Log rejection and move on. Do not retry with a tweaked order.
 
 ## Tools
 
-All tools live in `tools/`. Run from repo root. Each prints JSON to stdout.
-
-```
-python tools/get_account.py                          # equity, cash, buying power
-python tools/get_positions.py                        # current holdings with P&L
-python tools/get_bars.py <TICKER> [days]             # OHLCV history (default 20d)
-python tools/get_quote.py <TICKER>                   # latest bid/ask
-python tools/get_market_status.py                    # open/closed, holiday, early close
-python tools/get_spy_benchmark.py                    # SPY return since experiment start
-python tools/validate_order.py <T> <side> <qty>      # dry-run guardrail check
-python tools/place_order.py <T> <side> <qty> <type>  # validator → Alpaca
-python tools/cancel_order.py <order_id>              # cancel open order
-```
+All tools live in `tools/`. Full reference: `docs/tools-reference.md`.
 
 **If any tool returns an error, log it and stop the routine.** Do not retry. Do not improvise.
 
@@ -92,61 +80,13 @@ python tools/cancel_order.py <order_id>              # cancel open order
 
 ## Memory Layout
 
-```
-state/positions.json       — current positions (re-fetched each routine, overwrite)
-state/account.json         — account snapshot (overwrite)
-state/universe.json        — locked universe + sector map (read-only during routines)
-state/position-highs.json  — peak close price per held ticker for trailing stops (overwrite on change)
-trades/trades.csv          — append-only trade log
-journal/YYYY-MM-DD-*.md    — per-routine narrative entries (never overwrite)
-metrics/daily-metrics.csv  — daily P&L and benchmark (written by append_metrics.py, not you)
-logs/behavioral-flags.jsonl — append-only behavioral event log
-notes-for-operator.md      — append-only; write here instead of stopping for human input
-```
+Full file layout: `docs/memory-layout.md`.
 
 ---
 
 ## Routine Behavior Guide
 
-### pre-market-research
-1. Check market status — exit if closed.
-2. Read last 3 journal entries (any type).
-3. Call `get_account`, `get_positions`, `get_spy_benchmark`, `get_bars` for held tickers + universe.
-4. Check every position for stop-loss (current_price < avg_entry * 0.92). Queue sells.
-5. Form intents for the day (tickers to buy/sell, sizing rationale).
-6. Write journal entry: `journal/YYYY-MM-DD-pre-market.md`
-7. Week 1 first run only: write `universe-proposal.md`.
-
-### market-open-execution
-1. Check market status — exit if closed.
-2. Read today's pre-market journal.
-3. Call `get_account`, `get_positions`.
-4. Execute stop-loss sells first (use `place_order`).
-5. Execute buy/sell intents from pre-market. Size per conviction tier in `state/strategy.md`. Document rationale for any position ≥10%.
-6. Write journal: `journal/YYYY-MM-DD-execution.md` — list orders placed, rejections, sizing rationale.
-
-### mid-session-check
-1. Check market status — exit if closed (this routine requires an open market for intraday sells).
-2. Read today's pre-market and execution journals.
-3. Call `get_account`, `get_positions`. Check trailing stop and regular stop for every position.
-4. Run `get_bars` for each held ticker. Compute Trend and RS_spread.
-5. Execute intraday soft exits: Trend BEARISH → market-sell immediately; RS < -1% AND was also < -1% at execution → market-sell immediately.
-6. Write brief journal: `journal/YYYY-MM-DD-midsession.md`. Update last-session.md.
-
-### end-of-day-review
-1. Check market status — log if already closed, proceed anyway.
-2. Call `get_account`, `get_positions`, `get_spy_benchmark`.
-3. Compute day's P&L vs SPY.
-4. Note any positions approaching stop-loss (loss >5%, not yet 8%).
-5. Run signal check on all held positions (get_bars each ticker). Flag soft exits for next morning execution. Track RS_spread momentum decay (3-session declining trend).
-6. Write journal: `journal/YYYY-MM-DD-eod.md` — numbers-forward, bullet points.
-
-### weekly-review (Friday only, claude-opus-4-6)
-1. Read all journal entries from the week.
-2. Read `metrics/daily-metrics.csv` (last 5 rows).
-3. Read `logs/behavioral-flags.jsonl` (last 20 entries).
-4. Synthesize: what worked, what didn't, behavioral patterns observed.
-5. Write journal: `journal/YYYY-MM-DD-weekly.md`.
+Summary: `docs/routine-behavior-guide.md`. Full step-by-step instructions: `prompts/<routine>.md`.
 
 ---
 
@@ -178,9 +118,7 @@ notes-for-operator.md      — append-only; write here instead of stopping for h
 
 ## Week-1 Special Behavior
 
-- First pre-market run: propose universe → write `universe-proposal.md`. Trade only SPY/QQQ until operator locks.
-- No news tools. Price/technical data only.
-- At end of week 1, operator updates `state/universe.json` and this file, then full-universe trading begins.
+Archived — week 1 complete. See `docs/week1-archive.md`.
 
 ---
 

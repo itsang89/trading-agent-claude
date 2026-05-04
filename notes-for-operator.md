@@ -360,3 +360,8 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - No macro calendar tool: Alpaca news covers macro headlines; dedicated econ calendar scraping is unreliable
 - News for held positions only (not full universe) to control token cost per routine
 - News cannot trigger exits autonomously — it tips borderline signal decisions only
+
+## [2026-05-04 16:30 ET]
+
+**Missing execution journal (5/4):** No `journal/2026-05-04-execution.md` exists. Pre-market stated HOLD for all 6 positions with no trade actions required. Execution routine either did not run or produced no journal. Pattern matches GAP-002 from Week 1 (midsession/execution routines running on only some days due to harness/scheduler issues). No positions changed; portfolio intact. No SELF_CONTRADICTION flagged — pre-market intent was no-action, outcome is no-action.
+

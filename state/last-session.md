@@ -1,67 +1,63 @@
 # Last Session Summary
-**Written by:** pre-market-research
+**Written by:** market-open-execution
 **Date:** 2026-05-05
 **Model used:** claude-sonnet-4-6
 **Week number:** 2
 
 ---
-## Portfolio State (pre-market 2026-05-05)
-- Equity: $10,007.16
-- Cash: $5,614.35 (~56.1%)
+## Portfolio State (post-execution 2026-05-05 ~9:47 AM ET)
+- Equity (pre-fill): $10,055.64
+- Cash post-fill: ~$5,336.64 (~53.1%)
 - Positions held: 6 (AAPL, AMZN, GOOGL, LLY, QQQ, XLE)
-- Market status: pre-market (opens 9:30 AM ET)
 
-## P&L Summary
-- Pre-market equity vs EOD 5/4: +$14.38 (+0.144%) — overnight/pre-market price recovery
-- Agent cumulative: +0.072% vs SPY +0.409% (delta −0.337 pp)
+## Orders Executed
+- AMZN ADD: 1 share at ~$277.71 (order_id: e80f2bd4-fc3a-4b8a-9a58-a50132077cb7)
+  - New qty: 3.91 shares | New avg_entry: $264.954194 | Hard stop: $243.76
 
-## Open Positions (entering execution 2026-05-05)
-| Ticker | Qty | Avg Entry | Close 5/4 | Unrlzd P&L | % Equity | Hard Stop | Trailing Active |
-|--------|-----|-----------|-----------|------------|----------|-----------|-----------------|
-| AAPL | 1.86 | $268.81 | $276.87 | +$12.95 (+2.59%) | 5.12% | $247.31 | No |
-| AMZN | 2.91 | $260.56 | $272.10 | +$37.81 (+4.99%) | 7.95% | $239.71 | No |
-| GOOGL | 3.41 | $366.98 | $383.21 | +$59.78 (+4.78%) | 13.10% | $337.62 | No* |
-| LLY | 0.51 | $981.72 | $968.18 | −$8.33 (−1.66%) | 4.92% | $903.18 | No |
-| QQQ | 0.75 | $661.81 | $672.78 | +$12.03 (+2.42%) | 5.08% | $608.87 | No |
-| XLE | 13.0 | $58.98 | $59.41 | +$5.20 (+0.68%) | 7.71% | $54.26 | No |
+## Open Positions
+| Ticker | Qty | Avg Entry | MV (est.) | % Equity | Hard Stop | Trailing Active | Threshold |
+|--------|-----|-----------|-----------|----------|-----------|-----------------|-----------|
+| AAPL | 1.86 | $268.81 | $518.75 | 5.16% | $247.31 | No | >$295.69 |
+| AMZN | 3.91 | $264.95 | $1,085.90 | 10.80% | $243.76 | No | >$291.45 |
+| GOOGL | 3.41 | $366.98 | $1,333.99 | 13.27% | $337.62 | No | >$403.68 |
+| LLY | 0.51 | $981.72 | $498.05 | 4.95% | $903.18 | No | >$1,079.89 |
+| QQQ | 0.75 | $661.81 | $510.26 | 5.07% | $608.87 | No | >$727.99 |
+| XLE | 13.0 | $58.98 | $770.64 | 7.67% | $54.26 | No | >$64.88 |
 
-*GOOGL trailing deactivated after 5/1 add. Re-activates when high_close > $403.68.
+## RS Momentum State (from pre-market 2026-05-05)
+10d reference: 2026-04-20. SPY_10d_ROC = +1.312%.
+| Ticker | RS_spread | Flag |
+|--------|-----------|------|
+| AAPL | +0.083% | WATCH — barely positive; if EOD RS < 0%, flag FIRST SESSION NEGATIVE |
+| AMZN | +8.256% | STRONG — Very High; now at 10.8% (tier floor ~13% — 1 share short due to floor rounding) |
+| GOOGL | +12.248% | STRONG — Very High |
+| LLY | +3.878% | HIGH — first RS decline session; if EOD RS < 0%, flag NEGATIVE SESSION 1/2 |
+| QQQ | +2.709% | POSITIVE — Standard |
+| XLE | +6.559% | STRONG — Very High; defer add decision to mid-session |
 
-## RS Momentum State (pre-market 2026-05-05, using 5/4 closes)
-10d reference: 2026-04-20 (bars[-11] from 13-bar set). SPY_10d_ROC = +1.312%.
-| Ticker | RS_spread today | 5/4 EOD | 5/1 EOD | Flag |
-|--------|----------------|---------|---------|------|
-| AAPL | +0.083% | +0.084% | +2.43% | WATCH — barely positive; no add until RS >1% |
-| AMZN | +8.256% | +8.255% | +0.68% | STRONG — Very High; ADD intent |
-| GOOGL | +12.248% | +12.249% | +8.88% | STRONG — Very High |
-| LLY | +3.878% | +3.878% | +11.93% | HIGH — first RS decline session; monitor |
-| QQQ | +2.709% | +2.709% | +0.64% | POSITIVE — Standard |
-| XLE | +6.559% | +6.560% | −1.64% | STRONG — Very High; defer add to mid-session |
-
-## Carry-Forward Actions for 2026-05-05 Execution
-1. **AMZN ADD ~1.85 shares** — target 13% floor of Very High tier; ~$505 at ~$273.55. Execute at 9:45 AM. After fill: fetch new avg_entry, place stop at avg_entry × 0.92, update position-highs.json. No existing stop_order to cancel (none in position-highs.json).
-2. **AAPL HOLD** — RS barely positive. No add. Flag WATCH at EOD if RS < 0%.
-3. **GOOGL HOLD** — Very High RS; at 13.1% equity within tier. Trailing deactivated.
-4. **LLY HOLD** — First RS decline session. No add. 2-session exit clock started today.
-5. **QQQ HOLD** — Standard. Vol weak (0.56).
-6. **XLE HOLD, reassess at mid-session (1:30 PM)** — Very High RS but OPEC+ supply increase (June) and ceasefire talks may unwind oil premium. If oil holds >$110 and XLE bullish with volume at mid-session, add ~1.85 shares to 13% tier floor.
-7. Re-check stops at every routine.
-8. AAPL: if EOD RS < 0%, flag RS FIRST SESSION NEGATIVE (WATCH). Do not exit without 2-session confirmation.
-9. LLY: if EOD RS < −1%, flag NEGATIVE SESSION 1 of 2-session exit rule.
-
-## Soft Exit Flags
-None. All positions BULLISH with POSITIVE RS.
-
-## Near-Stop Warnings
-None.
-
-## Open Contradictions
-None.
+## Carry-Forward Actions for 2026-05-05 EOD/Mid-Session
+1. **AMZN: NO standing stop order** — place_stop_order.py failed (fractional/DAY order error). Hard stop $243.76 must be enforced manually at every routine. Stop target logged in notes-for-operator.md.
+2. **XLE mid-session add reassessment (1:30 PM)** — if oil holds >$110 and XLE BULLISH with volume, add ~1.85 shares to reach ~13% of equity tier floor. Pre-market deferred to mid-session due to Iran ceasefire talks potentially unwinding oil premium.
+3. **AAPL** — if EOD RS_spread < 0%: flag WATCH-FIRST-SESSION-NEGATIVE.
+4. **LLY** — if EOD RS_spread < -1%: flag NEGATIVE SESSION 1 of 2-session exit rule.
+5. **GOOGL** — trailing reactivates when high_close > $403.68. Monitor.
+6. **Stop-loss at every routine:** AMZN hard stop $243.76 (no standing stop order — manual check only).
 
 ## Regime
 MIXED — 6/12 universe BULLISH. Be selective.
 BULLISH: QQQ, XLE, AAPL, GOOGL, LLY, AMZN
 BEARISH: XLV, NVDA, MSFT, META, JPM, BRK.B
 
-## Pending Operator Proposals
-See notes-for-operator.md — 5 operational proposals from Week 1 weekly-review, plus note re: missing execution routine 5/4.
+## Soft Exit Flags
+None active. AAPL WATCH (RS barely positive). LLY monitoring (first RS decline).
+
+## Open Contradictions
+None.
+
+## Stop Order Status
+- AAPL: no stop_order_id (no stop placed; hard stop enforced manually)
+- AMZN: no stop_order_id — place_stop_order.py failed; hard stop $243.76 manual
+- GOOGL: no stop_order_id
+- LLY: no stop_order_id
+- QQQ: no stop_order_id
+- XLE: no stop_order_id

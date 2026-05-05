@@ -365,3 +365,17 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 
 **Missing execution journal (5/4):** No `journal/2026-05-04-execution.md` exists. Pre-market stated HOLD for all 6 positions with no trade actions required. Execution routine either did not run or produced no journal. Pattern matches GAP-002 from Week 1 (midsession/execution routines running on only some days due to harness/scheduler issues). No positions changed; portfolio intact. No SELF_CONTRADICTION flagged — pre-market intent was no-action, outcome is no-action.
 
+---
+
+## [2026-05-05 ~9:47 ET — Execution Routine]
+
+**STOP ORDER PLACEMENT FAILED — AMZN (place_stop_order.py returned placed=false)**
+- AMZN add executed: 1 share bought at ~$277.71, order_id: e80f2bd4-fc3a-4b8a-9a58-a50132077cb7
+- New avg_entry: $264.954194 | New total qty: 3.91 | Computed stop: $243.76
+- `python3 tools/place_stop_order.py AMZN 3.91 243.76` returned `placed: false`
+- Error: `{"code":42210000,"message":"fractional orders must be DAY orders"}`
+- Root cause: Alpaca rejects fractional-share stop orders unless they are DAY orders; stop tool likely submits GTC.
+- AMZN position-highs.json updated WITHOUT stop fields (no stop_order_id, no stop_price).
+- AMZN currently has **NO standing stop order**. Hard stop must be enforced manually at $243.76 (avg_entry $264.954 × 0.92) each routine until this is resolved.
+- **Operator action recommended:** Fix `tools/place_stop_order.py` to use `time_in_force=DAY` for fractional qty orders, or explore GTC alternative for whole-share rounding.
+

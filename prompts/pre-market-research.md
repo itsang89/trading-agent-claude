@@ -176,6 +176,7 @@ Write state/last-session.md (full overwrite) using the schema in MEMORY.md.
 Include in the handoff: RS_spread values for each held position (for tomorrow's decay check), regime classification, and any RS DETERIORATING flags.
 
 ### Step 12 — Commit and push
+**CRITICAL: Push directly to main. Do NOT create a new branch. Do NOT create a pull request. The command `git push origin HEAD:main` pushes your current commits directly to the remote main branch regardless of what branch you are on — this is intentional and required. Creating a branch or PR will break subsequent routines that read state from main.**
 ```
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"

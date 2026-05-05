@@ -189,9 +189,11 @@ Append audit line to `logs/learning-harness.jsonl`:
 ```
 
 ### Step 12 — Commit and push
+**CRITICAL: Push directly to main. Do NOT create a new branch. Do NOT create a pull request. The command `git push origin HEAD:main` pushes your current commits directly to the remote main branch regardless of what branch you are on — this is intentional and required. Creating a branch or PR will break subsequent routines that read state from main.**
 ```bash
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/itsang89/trading-agent-claude.git
 git add journal/ state/ logs/ learnings/ CLAUDE.md state/strategy.md notes-for-operator.md
 git commit -m "weekly-review: $(date +%Y-%m-%d)" || echo "Nothing to commit"
 git push origin HEAD:main

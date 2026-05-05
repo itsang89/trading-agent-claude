@@ -98,6 +98,7 @@ Append to state/last-session.md: mid-session actions taken (sells executed, posi
 (Full overwrite of last-session.md to reflect current state.)
 
 ### Step 9 — Commit and push
+**CRITICAL: Push directly to main. Do NOT create a new branch. Do NOT create a pull request. The command `git push origin HEAD:main` pushes your current commits directly to the remote main branch regardless of what branch you are on — this is intentional and required. Creating a branch or PR will break subsequent routines that read state from main.**
 ```
 git config user.name "Trading Agent Bot"
 git config user.email "trading-agent@users.noreply.github.com"

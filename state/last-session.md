@@ -1,70 +1,67 @@
 # Last Session Summary
-**Written by:** market-open-execution
-**Date:** 2026-05-04
+**Written by:** pre-market-research
+**Date:** 2026-05-05
 **Model used:** claude-sonnet-4-6
 **Week number:** 2
 
 ---
-## Portfolio State (EOD 2026-05-04)
-- Equity: $9,992.78
-- Cash: $5,614.35 (~56.2%)
+## Portfolio State (pre-market 2026-05-05)
+- Equity: $10,007.16
+- Cash: $5,614.35 (~56.1%)
 - Positions held: 6 (AAPL, AMZN, GOOGL, LLY, QQQ, XLE)
-- Market status: closed (EOD)
+- Market status: pre-market (opens 9:30 AM ET)
 
 ## P&L Summary
-- Day P&L: −$0.43 (−0.004%)
-- Agent vs SPY today: −0.004% vs −0.3331% (agent outperformed +0.329 pp)
-- Agent cumulative: −0.072% vs SPY +0.409% (delta −0.481 pp)
+- Pre-market equity vs EOD 5/4: +$14.38 (+0.144%) — overnight/pre-market price recovery
+- Agent cumulative: +0.072% vs SPY +0.409% (delta −0.337 pp)
 
-## Open Positions (entering 2026-05-05)
-| Ticker | Qty | Avg Entry | Close EOD | Unrlzd P&L | % Equity | Hard Stop | Trailing Active |
+## Open Positions (entering execution 2026-05-05)
+| Ticker | Qty | Avg Entry | Close 5/4 | Unrlzd P&L | % Equity | Hard Stop | Trailing Active |
 |--------|-----|-----------|-----------|------------|----------|-----------|-----------------|
-| AAPL | 1.86 | $268.81 | $276.87 | +$15.01 (+3.00%) | 5.15% | $247.31 | No |
-| AMZN | 2.91 | $260.56 | $272.10 | +$33.53 (+4.42%) | 7.93% | $239.71 | No |
-| GOOGL | 3.41 | $366.98 | $383.21 | +$55.39 (+4.42%) | 13.08% | $337.62 | No* |
-| LLY | 0.51 | $981.72 | $968.18 | −$6.90 (−1.38%) | 4.94% | $903.18 | No |
-| QQQ | 0.75 | $661.81 | $672.78 | +$8.23 (+1.65%) | 5.06% | $608.87 | No |
-| XLE | 13.0 | $58.98 | $59.41 | +$5.59 (+0.73%) | 7.72% | $54.26 | No |
+| AAPL | 1.86 | $268.81 | $276.87 | +$12.95 (+2.59%) | 5.12% | $247.31 | No |
+| AMZN | 2.91 | $260.56 | $272.10 | +$37.81 (+4.99%) | 7.95% | $239.71 | No |
+| GOOGL | 3.41 | $366.98 | $383.21 | +$59.78 (+4.78%) | 13.10% | $337.62 | No* |
+| LLY | 0.51 | $981.72 | $968.18 | −$8.33 (−1.66%) | 4.92% | $903.18 | No |
+| QQQ | 0.75 | $661.81 | $672.78 | +$12.03 (+2.42%) | 5.08% | $608.87 | No |
+| XLE | 13.0 | $58.98 | $59.41 | +$5.20 (+0.68%) | 7.71% | $54.26 | No |
 
-*GOOGL: trailing DEACTIVATED after 5/1 add. Re-activates when high_close > $403.68.
+*GOOGL trailing deactivated after 5/1 add. Re-activates when high_close > $403.68.
 
-## RS Momentum State (EOD 2026-05-04)
-Signal computed with SMA_14 (14 bars through 5/4 close). 10d reference = 4/20 close.
-| Ticker | RS_spread EOD | 5/1 EOD | 4/30 EOD | Flag |
-|--------|---------------|---------|----------|------|
-| AAPL | +0.084% | +2.43% | +0.56% | WATCH — barely positive; declining trend |
-| AMZN | +8.255% | +0.68% | +3.73% | POSITIVE — window shift, strongly recovered |
-| GOOGL | +12.249% | +8.88% | +12.18% | STRONG — very high conviction |
-| LLY | +3.878% | +11.93% | N/A | WATCH — first RS decline session |
-| QQQ | +2.709% | +0.64% | +1.84% | POSITIVE — standard conviction, recovered |
-| XLE | +6.560% | −1.64% | +2.94% | POSITIVE — window shift, strongly recovered |
+## RS Momentum State (pre-market 2026-05-05, using 5/4 closes)
+10d reference: 2026-04-20 (bars[-11] from 13-bar set). SPY_10d_ROC = +1.312%.
+| Ticker | RS_spread today | 5/4 EOD | 5/1 EOD | Flag |
+|--------|----------------|---------|---------|------|
+| AAPL | +0.083% | +0.084% | +2.43% | WATCH — barely positive; no add until RS >1% |
+| AMZN | +8.256% | +8.255% | +0.68% | STRONG — Very High; ADD intent |
+| GOOGL | +12.248% | +12.249% | +8.88% | STRONG — Very High |
+| LLY | +3.878% | +3.878% | +11.93% | HIGH — first RS decline session; monitor |
+| QQQ | +2.709% | +2.709% | +0.64% | POSITIVE — Standard |
+| XLE | +6.559% | +6.560% | −1.64% | STRONG — Very High; defer add to mid-session |
 
-Note: AMZN and XLE RS jumped due to 10d reference window rolling from 4/17→4/20. Not step-change in fundamentals.
+## Carry-Forward Actions for 2026-05-05 Execution
+1. **AMZN ADD ~1.85 shares** — target 13% floor of Very High tier; ~$505 at ~$273.55. Execute at 9:45 AM. After fill: fetch new avg_entry, place stop at avg_entry × 0.92, update position-highs.json. No existing stop_order to cancel (none in position-highs.json).
+2. **AAPL HOLD** — RS barely positive. No add. Flag WATCH at EOD if RS < 0%.
+3. **GOOGL HOLD** — Very High RS; at 13.1% equity within tier. Trailing deactivated.
+4. **LLY HOLD** — First RS decline session. No add. 2-session exit clock started today.
+5. **QQQ HOLD** — Standard. Vol weak (0.56).
+6. **XLE HOLD, reassess at mid-session (1:30 PM)** — Very High RS but OPEC+ supply increase (June) and ceasefire talks may unwind oil premium. If oil holds >$110 and XLE bullish with volume at mid-session, add ~1.85 shares to 13% tier floor.
+7. Re-check stops at every routine.
+8. AAPL: if EOD RS < 0%, flag RS FIRST SESSION NEGATIVE (WATCH). Do not exit without 2-session confirmation.
+9. LLY: if EOD RS < −1%, flag NEGATIVE SESSION 1 of 2-session exit rule.
 
-## Soft Exit Flags for Tomorrow
-**None.** All positions: Trend BULLISH, RS POSITIVE.
+## Soft Exit Flags
+None. All positions BULLISH with POSITIVE RS.
 
 ## Near-Stop Warnings
-**None.**
-
-## Carry-Forward Actions for 2026-05-05
-1. All 6 positions HOLD — no soft exits pending.
-2. Evaluate AMZN add: RS now +8.26% (Very High), position at ~7.9% equity (below High tier ceiling of 13%). Pre-market must check if window-roll RS is durable or artifact.
-3. Evaluate XLE add: RS now +6.56% (Very High), position at ~7.7% equity (same caveat).
-4. AAPL: RS barely positive (+0.084%). If RS turns negative, flag WATCH — RS FIRST SESSION NEGATIVE. Do not add until RS > 1%.
-5. LLY: First RS decline session (+11.93% → +3.88%). Monitor; 2-session rule applies.
-6. GOOGL: Strong RS +12.25%. Trailing stop deactivated. high_close $385.79 must exceed $403.68 to reactivate.
-7. **News tools active from 2026-05-05**: Check earnings calendar, Fed events, macro calendar before new entries.
-8. Re-confirm regime (count BULLISH universe tickers).
-9. Recalculate stops every routine.
-
-## Sizing Notes for Pre-Market
-- AMZN + XLE are undersized relative to their current RS conviction tier. Pre-market should evaluate adds with standard caution (check if RS sustained or window artifact).
-- Cash at 56.2% — above soft minimum but high for a regime with 4/6 positions Very High or High conviction.
-
+None.
 
 ## Open Contradictions
 None.
 
+## Regime
+MIXED — 6/12 universe BULLISH. Be selective.
+BULLISH: QQQ, XLE, AAPL, GOOGL, LLY, AMZN
+BEARISH: XLV, NVDA, MSFT, META, JPM, BRK.B
+
 ## Pending Operator Proposals
-See notes-for-operator.md — 5 operational proposals from Week 1 weekly-review, plus new note re: missing execution routine 5/4.
+See notes-for-operator.md — 5 operational proposals from Week 1 weekly-review, plus note re: missing execution routine 5/4.

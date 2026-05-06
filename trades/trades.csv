@@ -20,3 +20,4 @@ date,time,ticker,side,qty,price,order_id,status,routine
 2026-05-06,09:47:32,AAPL,buy,1.0,,5dba4dcd-389a-4dd5-9080-74c5f740bbee,OrderStatus.PENDING_NEW,
 2026-05-06,09:47:34,AMZN,buy,0.85,,bbbc5e67-9882-4ae4-9fdd-435ddaeafc02,OrderStatus.PENDING_NEW,
 2026-05-06,09:47:35,GOOGL,buy,0.91,,db878e09-8f88-4e45-9bc3-724f38ec1476,OrderStatus.PENDING_NEW,
+2026-05-06,13:39:29,XLE,sell,14.0,,94a06d90-0a26-40c2-a838-fb85459b8b63,OrderStatus.PENDING_NEW,

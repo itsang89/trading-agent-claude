@@ -379,3 +379,19 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - AMZN currently has **NO standing stop order**. Hard stop must be enforced manually at $243.76 (avg_entry $264.954 × 0.92) each routine until this is resolved.
 - **Operator action recommended:** Fix `tools/place_stop_order.py` to use `time_in_force=DAY` for fractional qty orders, or explore GTC alternative for whole-share rounding.
 
+---
+
+## [2026-05-06 ~9:47 ET — Execution Routine]
+
+**STOP ORDER PLACEMENT FAILED — ALL 4 ADDS (same fractional-share DAY order error)**
+- All 4 add orders executed successfully (AAPL +1, AMZN +0.85, GOOGL +0.91, LLY +0.81).
+- After each add, `python3 tools/place_stop_order.py` was called with updated qty and stop price. All 4 returned `placed: false` with same error: `{"code":42210000,"message":"fractional orders must be DAY orders"}`
+- Affected positions and manual stops (avg_entry × 0.92):
+  - AAPL: 2.86 shares, avg_entry $273.908, hard stop $252.20 (manual)
+  - AMZN: 4.76 shares, avg_entry $266.733, hard stop $245.39 (manual)
+  - GOOGL: 4.32 shares, avg_entry $373.299, hard stop $343.44 (manual)
+  - LLY: 1.32 shares, avg_entry $987.435, hard stop $908.44 (manual)
+- XLE still has stop_order_id: 9c12ad6b at $54.30 (whole-share position; no change today).
+- All 5 fractional positions are WITHOUT standing stop orders. Hard stops enforced manually at every routine.
+- **Operator action still required:** Fix `tools/place_stop_order.py` to submit DAY orders for fractional-share positions.
+

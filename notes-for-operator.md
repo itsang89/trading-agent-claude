@@ -395,3 +395,15 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - All 5 fractional positions are WITHOUT standing stop orders. Hard stops enforced manually at every routine.
 - **Operator action still required:** Fix `tools/place_stop_order.py` to submit DAY orders for fractional-share positions.
 
+---
+
+## [2026-05-07 ~9:47 ET — Execution Routine]
+
+**STOP ORDER PLACEMENT FAILED — QQQ (same fractional-share DAY order error)**
+- QQQ add executed: 0.70 shares bought at ~$696, order_id: e4fa7017-33a6-403f-8fcf-d8856112e023
+- New avg_entry: $678.381 | New total qty: 1.45 | Computed stop: $624.11
+- `python3 tools/place_stop_order.py QQQ 1.45 624.11` returned `placed: false`
+- Error: `{"code":42210000,"message":"fractional orders must be DAY orders"}`
+- QQQ position-highs.json updated WITHOUT stop fields. Manual hard stop at $624.11.
+- This is the 6th consecutive stop order failure (same error). **Operator action required:** Fix place_stop_order.py to use DAY orders for fractional positions.
+

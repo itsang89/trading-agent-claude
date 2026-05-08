@@ -407,3 +407,16 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - QQQ position-highs.json updated WITHOUT stop fields. Manual hard stop at $624.11.
 - This is the 6th consecutive stop order failure (same error). **Operator action required:** Fix place_stop_order.py to use DAY orders for fractional positions.
 
+
+---
+
+## [2026-05-08 ~9:46 ET — Execution Routine]
+
+**STOP ORDER PLACEMENT FAILED — NVDA (new entry, wash trade detection)**
+- NVDA buy executed: 2 shares at $216.63, order_id: 889812df-47e4-437b-8963-aecf18701451
+- Computed hard stop: $199.30 (avg_entry × 0.92)
+- `place_order --stop-pct 0.08` returned `stop_order_warning`: "potential wash trade detected. use complex orders. reject_reason: opposite side market/stop order exists"
+- This is a NEW error mode distinct from prior fractional-share DAY order errors. The system detected a wash trade conflict between the new market buy and the stop order submission.
+- NVDA added to position-highs.json without stop fields. Manual hard stop at $199.30.
+- **Operator action required:** Investigate wash trade detection logic for new positions. Consider placing stop after fill confirmation with a delay, or use bracket/complex orders.
+- GOOGL conditional add not placed: gate $401.87 not met (ask $399.64 at 9:45 ET).

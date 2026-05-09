@@ -175,6 +175,26 @@ Each routine starts cold with zero memory. The prompt file (`prompts/<routine>.m
 - [W1|HIGH] Always document the actual model used in each journal header. Any model is acceptable for any routine (operator policy 2026-05-03: model flexibility allowed). Never suppress model identity — the operator tracks behavioral consistency across models. Do NOT write a notes-for-operator.md entry solely for a model difference; just log it in the header.
   Source: 5 of 10 routine sessions this week ran under "opencode/hy3-preview-free" instead of claude-sonnet-4-6; deviation was only discoverable via journal headers. Operator subsequently approved open model policy.
 
+---
+
+*Week 2 lessons added 2026-05-09 by weekly-review routine*
+
+### Execution Patterns
+
+- [W2|HIGH] Alpaca does NOT support GTC stop orders for fractional-share positions. All stop enforcement for any fractional-share position is manual and must occur at every routine. This is a persistent platform constraint, not a transient tool error. When checking stops, verify whether stop_order_id is present in position-highs.json — if absent, enforce manually using avg_entry × 0.92. Do not log a notes-for-operator.md entry for each failure after the first week — the failure is known and expected until operator fixes the tool.
+  Source: 10+ consecutive stop order placement failures across all fractional positions (AAPL, AMZN, GOOGL, LLY, QQQ, NVDA) throughout Weeks 1–2; only whole-share positions (XLE) had functioning standing stop orders.
+
+- [W2|MEDIUM] When a held position shows RS_spread in the NEUTRAL zone [−1%, 0%] at mid-session, classify as WATCH — do NOT apply the RS session-1 trim rule, which triggers only at NEGATIVE (RS < −1%). Mid-session NEUTRAL is frequently an intraday artifact. Require EOD confirmation before escalating to NEGATIVE flag. This prevents false trims on recoverable positions.
+  Source: 5/8 mid-session LLY RS_spread −0.215% correctly classified as WATCH (NEUTRAL, not NEGATIVE); EOD recovered to +3.994%. False trim avoided.
+
+### Market Regime Awareness
+
+- [W2|MEDIUM] When regime confirms BULL (≥8/12 universe tickers BULLISH) and multiple held positions are undersized for their conviction tier, scale ALL eligible undersized positions in that SAME session. Do not spread scaling across 3–4 sessions. The BULL regime cash target (10–25%) is a binding constraint: document explicitly why each undersized position is not scaled if cash remains > 35% in the first BULL session. Silent cash accumulation in a confirmed BULL regime is a sizing error regardless of how many qualifying sessions the agent waits for.
+  Source: Cash was 43.6% after regime confirmed BULL on 5/7 (Day 1 of BULL). Only QQQ add executed; residual cash 38.85% through Friday. Primary driver of −1.808 pp weekly underperformance vs SPY (+2.368%).
+
+- [W2|MEDIUM] When holding a commodity ETF (XLE, energy/commodity ETFs) and news confirms a macro catalyst reversal (oil price drop, geopolitical risk premium unwinding), treat the news as a secondary signal that front-runs the likely technical trend break. Monitor intraday more closely; if intraday close drops below SMA at mid-session, execute trend-break sell immediately rather than waiting for EOD confirmation. News does not override signals, but reduces false-exit risk when trend is also breaking.
+  Source: 5/5 pre-market news confirmed oil price decline and Iran ceasefire talks; XLE dropped from $59.45 to $57.14 pre-market. 5/6 mid-session close $56.935 < SMA_14 $57.440 — sold immediately. Correct call; 5/7–5/8 prices confirmed further decline ($56.98, $55.96).
+
 <!-- LEARNED_BEHAVIORS:END -->
 
 ---

@@ -415,3 +415,28 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - Root cause: remote contains commits not pulled locally. Per instructions, logging failure and not retrying.
 - Operator action needed: `git pull` on local repo to sync with remote, then re-push.
 
+
+---
+
+## Weekly Review Proposals — Week 2 (2026-05-09)
+
+### PROPOSED CHANGE (Week 2) — #1 [CRITICAL]
+- **Target:** `tools/place_stop_order.py`
+- **Rationale:** GAP-W2-003 — The fractional stop order error (`code 42210000: fractional orders must be DAY orders`) has persisted across 10+ consecutive attempts over Weeks 1–2. ALL 6 current positions have no standing stop orders. Manual enforcement is the only mechanism; if a routine fails to run, there is zero automatic downside protection.
+- **Proposed change:** Modify `place_stop_order.py` to submit stop orders with `time_in_force='day'` for fractional positions, or investigate using Alpaca's complex order API (bracket/OTO orders) which may support fractional GTC stops.
+- **Expected SPY outperformance impact:** MEDIUM positive — reduces tail risk from missed routine sessions + unprotected positions.
+- **Request:** Operator fix and test before Week 3 begins (2026-05-11).
+
+### PROPOSED CHANGE (Week 2) — #2 [HIGH]
+- **Target:** Harness/scheduler for EOD and mid-session routines
+- **Rationale:** GAP-W2-002 (repeating GAP-002 from Week 1) — EOD routine missed on 5/5; execution routine missed on 5/4. Midsession ran on only 3 of 5 days in Week 2. Pattern persists from Week 1 (midsession ran 1/5 days). This is the second week of the same scheduler gap. Severity upgraded to HIGH.
+- **Proposed change:** Investigate why scheduled make targets fail to run on some days. Add harness-level health check: if EOD journal for date D is missing by 5:30 PM ET, send an alert or attempt retry.
+- **Expected SPY outperformance impact:** MEDIUM — mid-session exits (e.g., XLE trend break on 5/6) are a key source of alpha. Missed mid-sessions leave intraday risk unmonitored.
+- **Request:** Operator fix scheduler reliability before Week 3.
+
+### PROPOSED CHANGE (Week 2) — #3 [MEDIUM]
+- **Target:** `tools/append_metrics.py` or EOD harness trigger
+- **Rationale:** GAP-W2-004 — `metrics/daily-metrics.csv` has no rows for any of the 10 trading days in Weeks 1–2 (aside from the 3 pre-experiment rows). The weekly review cannot use the CSV for quantitative trend analysis; all performance data was reconstructed from journals. This was also flagged in Week 1 (GAP-004) and not yet fixed.
+- **Proposed change:** Ensure `append_metrics.py` runs automatically after each EOD routine close (via Makefile or harness hook). Use market date (not wall-clock date) for the row timestamp to prevent late-run date mismatches.
+- **Expected SPY outperformance impact:** N/A — operational tracking only.
+- **Request:** Operator fix before Week 3.

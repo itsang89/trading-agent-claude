@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-place_stop_order.py — Place or replace a GTC stop-sell order for an existing position.
-Use this to set/update the standing Alpaca stop after entering or adding to a position.
+place_stop_order.py — Place a DAY stop-sell order for an existing position.
+Use this to set/update the standing stop at each routine (pre-market or execution).
+
+Alpaca rejects GTC stop orders for fractional-share positions (error 42210000:
+"fractional orders must be DAY orders"). DAY orders expire at market close, so
+this tool must be called at each session to re-establish stop protection.
 
 Usage:
     python tools/place_stop_order.py <TICKER> <qty> <stop_price>
@@ -38,7 +42,7 @@ def main():
             symbol=ticker,
             qty=qty,
             side=OrderSide.SELL,
-            time_in_force=TimeInForce.GTC,
+            time_in_force=TimeInForce.DAY,
             stop_price=stop_price,
         )
         order = client.submit_order(request)

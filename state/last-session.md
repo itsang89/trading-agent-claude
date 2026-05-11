@@ -1,71 +1,74 @@
 # Last Session Summary
-**Written by:** market-open-execution
-**Date:** 2026-05-07
+**Written by:** pre-market-research
+**Date:** 2026-05-11
 **Model used:** claude-sonnet-4-6
 **Week number:** 2
 
 ---
 
-## Portfolio State (Post-Execution 2026-05-07 ~9:48 AM ET)
-- Equity: $10,056.14 | Cash: $3,906.83 (~38.9%)
-- Positions held: 5 (AAPL, AMZN, GOOGL, LLY, QQQ)
+## Portfolio State (Pre-Market 2026-05-11 ~8:35 AM ET)
+- Equity: $10,022.60 | Cash: $3,473.57 (~34.6%)
+- Positions held: 6 (AAPL, AMZN, GOOGL, LLY, NVDA, QQQ)
 
 ## Open Positions
 | Ticker | Qty | Avg Entry | Hard Stop | Trailing Threshold | Trailing Active | % Equity |
 |--------|-----|-----------|-----------|-------------------|-----------------|---------|
-| AAPL | 2.86 | $273.908 | $252.20 | >$301.30 | No | ~8.2% |
-| AMZN | 4.76 | $266.733 | $245.39 | >$293.41 | No | ~13.0% |
-| GOOGL | 4.32 | $373.299 | $343.44 | >$410.63 | No | ~17.1% |
-| LLY | 1.32 | $987.435 | $908.44 | >$1,086.18 | No | ~12.9% |
-| QQQ | 1.45 | $678.381 | $624.11 | >$746.15 | No | ~10.0% |
-
-## Execution Summary
-- **QQQ ADD executed:** 0.70 shares at ~$696. Total 1.45 shares, avg_entry $678.381, hard stop $624.11.
-- **GOOGL ADD aborted:** Conditional gate price ≥ $401.81 not met at 9:45 AM (ask $397.42). Re-evaluate at midsession or EOD if price moves above $401.81.
-- **AAPL, AMZN, LLY:** HOLD. No changes.
-
-## RS Momentum State (from pre-market 2026-05-07)
-SPY_10d_ROC = +3.173% (bars[-1]=$733.77, bars[-11]=4/22 $711.20)
-| Ticker | RS_spread | Flag |
-|--------|-----------|------|
-| AAPL | +2.07% | POSITIVE — Standard tier |
-| AMZN | +4.51% | POSITIVE — High tier (RS_MOMENTUM_DECAY active: 5/4 +8.26% → 5/5 +6.70% → 5/6 +4.51%) |
-| GOOGL | +14.06% | STRONG — Very High tier |
-| LLY | +3.95% | POSITIVE — High tier |
-| QQQ | +3.02% | POSITIVE — High tier |
-
-## position-highs.json State (post-execution 2026-05-07)
-| Ticker | High Close | Entry Price | Trailing Active |
-|--------|-----------|------------|-----------------|
-| AAPL | $287.46 | $273.908 | No (<$301.30) |
-| AMZN | $276.36 | $266.733 | No (<$293.41) |
-| GOOGL | $397.83 | $373.299 | No (<$410.63) — WATCH: gap ~$12.80 at execution |
-| LLY | $991.945 | $987.435 | No (<$1,086.18) |
-| QQQ | $695.62 | $678.381 | No (<$746.15) — updated entry_price post-add |
+| AAPL | 2.86 | $273.908 | $252.00 | >$301.30 | No | ~8.35% |
+| AMZN | 4.76 | $266.733 | $245.39 | >$293.41 | No | ~12.86% |
+| GOOGL | 4.32 | $373.299 | $343.44 | >$410.63 | No | ~17.09% |
+| LLY | 1.32 | $987.435 | $908.44 | >$1,086.18 | No | ~12.49% |
+| NVDA | 2.00 | $216.630 | $199.30 | >$238.29 | No | ~4.27% |
+| QQQ | 1.45 | $678.381 | $624.11 | >$746.22 | No | ~10.28% |
 
 ## Stop Order Status
-- All 5 positions: no stop_order_id (fractional GTC error persists). Manual enforcement.
-- Hard stops: AAPL $252.20, AMZN $245.39, GOOGL $343.44, LLY $908.44, QQQ $624.11
+- NVDA: stop_order_id `216377a3-76e3-486c-86a9-3206bc12e956`, stop_price $199.30 (GTC — placed 5/11 pre-market)
+- AAPL, AMZN, GOOGL, LLY, QQQ: no standing stop orders (fractional GTC error persists). Manual enforcement.
+
+## RS Momentum State (5/8 bars, bars[-11] = 4/24 close)
+SPY_10d_ROC = +3.30% (bars[-1]=5/8 $737.54, bars[-11]=4/24 $713.97)
+| Ticker | RS_spread | Flag |
+|--------|-----------|------|
+| AAPL | +4.86% | POSITIVE — High tier (near Very High) |
+| AMZN | −0.05% | NEUTRAL — RS_MOMENTUM_DECAY ACTIVE (4th+ consecutive decline) |
+| GOOGL | +13.06% | STRONG — Very High tier |
+| LLY | +4.00% | POSITIVE — High tier (weak vol 0.76) |
+| NVDA | +0.08% | POSITIVE (borderline) — Borderline tier |
+| QQQ | +3.81% | POSITIVE — High tier |
+
+## position-highs.json State (updated 5/11 pre-market)
+| Ticker | High Close | Entry Price | Stop Order | Trailing Active |
+|--------|-----------|------------|-----------|-----------------|
+| AAPL | $293.15 | $273.908 | Manual | No (<$301.30) |
+| AMZN | $276.36 | $266.733 | Manual | No (<$293.41) |
+| GOOGL | $400.67 | $373.299 | Manual | No (<$410.63) — gap $9.96 |
+| LLY | $991.945 | $987.435 | Manual | No (<$1,086.18) |
+| NVDA | $216.63 | $216.630 | `216377a3-76e3-486c-86a9-3206bc12e956` at $199.30 | No (<$238.29) |
+| QQQ | $711.12 | $678.381 | Manual | No (<$746.22) |
 
 ## Performance Summary
-- Cumulative: agent +0.561% vs SPY ~+2.60% → delta ~−2.04 pp (agent trailing)
+- Cumulative: agent +0.226% vs SPY +3.129% → delta ~−2.90 pp (agent trailing)
 
 ## Regime
-BULL — 8/12 BULLISH (Day 1 of transitional period, entered from MIXED yesterday).
+MIXED — 7/12 BULLISH (downgrade from BULL 8/12 on 5/7)
+BULLISH: QQQ, AAPL, AMZN, GOOGL, LLY, NVDA, BRK.B
+BEARISH: XLV, XLE, MSFT, META, JPM
 
 ## RS Chain (for 3-session decay tracking)
-| Ticker | 5/4 EOD RS | 5/5 mid RS | 5/6 EOD RS | Trend |
-|--------|-----------|-----------|-----------|-------|
-| AAPL | +0.08% | +3.35% | +2.07% | Mixed (not 3-consecutive ↓) |
-| AMZN | +8.26% | +6.70% | +4.51% | ↓↓↓ RS_MOMENTUM_DECAY active |
-| GOOGL | +12.25% | +13.06% | +14.06% | ↑ Strong |
-| LLY | +3.88% | +7.01% | +3.95% | Mixed (up then down) |
-| QQQ | +2.71% | +2.94% | +3.02% | ↑ Improving |
+| Ticker | 5/5 RS | 5/6 EOD RS | 5/8 RS | Trend |
+|--------|--------|-----------|--------|-------|
+| AAPL | +3.35% | +2.07% | +4.86% | ↓ then ↑ (not decay) |
+| AMZN | +6.70% | +4.51% | −0.05% | ↓↓↓ RS_MOMENTUM_DECAY ACTIVE |
+| GOOGL | +13.06% | +14.06% | +13.06% | ↑ then flat (not decay) |
+| LLY | +7.01% | +3.95% | +4.00% | ↓ then flat (not decay) |
+| QQQ | +2.94% | +3.02% | +3.81% | ↑↑ improving |
+| NVDA | — | — | +0.08% | new position |
 
-## Carry-Forward for Midsession / EOD 2026-05-07
-1. **GOOGL conditional add** — condition was $401.81 at 9:45 AM. Missed by $4.39. If GOOGL rises above $401.81 intraday: re-evaluate the add (0.71 shares to ~20%) at midsession. New avg_entry would be ~$377.22, new stop ~$347.04, new trailing threshold ~$414.94.
-2. **GOOGL trailing threshold** — gap to activation: high_close $397.83 vs threshold $410.63 = $12.80. If GOOGL closes above $410.63 today, trailing becomes active. Update position-highs.json at EOD.
-3. **All stop orders manual** — no GTC stop orders exist. Check every position at midsession and EOD.
-4. **AMZN RS_MOMENTUM_DECAY** — flag persists. Position at 13.0% High tier ceiling. Do NOT add. If RS_spread < 3% at next routine, trim toward 8–10%.
-5. **AAPL RS Standard tier** — at ~8.2%. Standard ceiling 8%. Negligible trim ($18). No action; no add.
-6. **Cash 38.9%** — above BULL target 25%. Explainable by: no eligible non-held entries, AMZN decay, LLY ceiling/low-vol, AAPL RS-tier drop. Only GOOGL (conditional, failed today) could further reduce cash.
+## Carry-Forward for Execution 2026-05-11
+1. **GOOGL conditional add** — only if price ≥ $404.68 at 9:45 AM (1% above 5/8 close $400.67). MIXED regime → no firm commitment. Pre-market price $396.50.
+2. **GOOGL trailing** — gap to activation: high_close $400.67 vs threshold $410.63 = $9.96. Update position-highs.json if GOOGL closes above $410.63 today.
+3. **AMZN RS_MOMENTUM_DECAY** — flag active. RS NEUTRAL (−0.05%). Trim from 12.86% → 8% if RS_spread drops below −1% at any session.
+4. **LLY warning zone** — gap: current $948.66 vs warning $938.06 = $10.60. Monitor at every routine.
+5. **Stop orders manual** — AAPL, AMZN, GOOGL, LLY, QQQ have no standing stop orders. Manual check each routine.
+6. **NVDA** — stop order placed. Do not add before 5/20 earnings (9 days). Borderline RS (+0.08%).
+7. **NVDA discrepancy** — flagged to operator. No 5/8 journal exists. Routine gap for 5/8 and 5/9-10 (weekend). Operator should investigate.
+8. **AAPL potential add** — strong RS jump to +4.86%. Monitor at execution for price ≥ $294.62 (soft gate). No firm commitment.

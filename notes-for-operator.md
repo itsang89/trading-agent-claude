@@ -407,3 +407,33 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 - QQQ position-highs.json updated WITHOUT stop fields. Manual hard stop at $624.11.
 - This is the 6th consecutive stop order failure (same error). **Operator action required:** Fix place_stop_order.py to use DAY orders for fractional positions.
 
+---
+
+## [2026-05-11 ~8:35 ET — Pre-Market Routine]
+
+**NVDA POSITION DISCREPANCY — UNRECORDED TRADE**
+- NVDA (2.0 shares, avg_entry $216.63) appears in live Alpaca positions but was NOT in last-session.md (written 5/7 execution) or position-highs.json.
+- No journal exists for 2026-05-08 (Friday). The last committed routine was 2026-05-07 execution.
+- Cash delta confirms trade: $3,906.83 (5/7) → $3,473.57 (5/11) = −$433.26 ≈ 2 × $216.63.
+- Possible causes: (a) routine ran on 5/8 but failed to commit/push; (b) manual operator trade.
+- Action taken by this routine: initialized NVDA in position-highs.json (high_close = entry_price = $216.63), placed GTC stop order at $199.30 (stop_order_id: `216377a3-76e3-486c-86a9-3206bc12e956` — SUCCEEDED, whole shares).
+- **Operator action required:** Clarify how NVDA was opened. If a routine ran on 5/8, recover and commit any local journals/state. If manual trade, confirm avg_entry $216.63 is accurate.
+
+**NVDA EARNINGS — approaching threshold**
+- NVDA next earnings: 2026-05-20 (9 days). Falls just above EARNINGS_THIS_WEEK ≤7d flag threshold.
+- By next pre-market (5/12), earnings will be 8 days away — still above threshold but approaching. By 5/14, within threshold.
+- Recommended: do not add to NVDA before earnings. Position currently borderline RS (+0.08%) at 4.27% equity — no reason to add regardless.
+
+**REGIME DOWNGRADE: BULL → MIXED**
+- 5/7: BULL (8/12 BULLISH). 5/11 bars: MIXED (7/12 BULLISH).
+- BRK.B moved to BULLISH (close $475.65 > SMA_13 $471.78), but another ticker fell BEARISH on 5/8 data (net change −1).
+- Strategy: cash target 25–40%, selective entries, top-3 RS cap per session.
+
+**AMZN RS DETERIORATION**
+- AMZN RS_spread now NEUTRAL (−0.05%) — effectively zero. RS_MOMENTUM_DECAY flag active since 5/6.
+- One session below −1% triggers position trim from 12.86% → 8%.
+- No action taken today (RS not yet NEGATIVE). Flagging for awareness.
+
+**STOP ORDER MILESTONE**
+- NVDA (2.0 whole shares): GTC stop order placed successfully — first successful stop placement since XLE (also whole shares). Confirms fractional GTC error is Alpaca-side restriction on fractional qty.
+- AAPL, AMZN, GOOGL, LLY, QQQ: still no standing stops. All manual enforcement.

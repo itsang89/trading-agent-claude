@@ -409,31 +409,63 @@ Per operator instruction, two new tools and a prompt step were implemented to su
 
 ---
 
+## [2026-05-08 14:30 ET — Mid-Session Routine]
+**PUSH FAILURE — mid-session-check routine:**
+- `git push origin HEAD:main` returned rejected (remote has work not in local repo).
+- Commit `midsession: 2026-05-09` (36639e2) created locally but **NOT pushed** to remote.
+- Root cause: remote contains commits not pulled locally. Per instructions, logging failure and not retrying.
+- Operator action needed: `git pull` on local repo to sync with remote, then re-push.
+
+
+---
+
+## Weekly Review Proposals — Week 2 (2026-05-09)
+
+### PROPOSED CHANGE (Week 2) — #1 [CRITICAL]
+- **Target:** `tools/place_stop_order.py`
+- **Rationale:** GAP-W2-003 — The fractional stop order error (`code 42210000: fractional orders must be DAY orders`) has persisted across 10+ consecutive attempts over Weeks 1–2. ALL 6 current positions have no standing stop orders. Manual enforcement is the only mechanism; if a routine fails to run, there is zero automatic downside protection.
+- **Proposed change:** Modify `place_stop_order.py` to submit stop orders with `time_in_force='day'` for fractional positions, or investigate using Alpaca's complex order API (bracket/OTO orders) which may support fractional GTC stops.
+- **Expected SPY outperformance impact:** MEDIUM positive — reduces tail risk from missed routine sessions + unprotected positions.
+- **Request:** Operator fix and test before Week 3 begins (2026-05-11).
+
+### PROPOSED CHANGE (Week 2) — #2 [HIGH]
+- **Target:** Harness/scheduler for EOD and mid-session routines
+- **Rationale:** GAP-W2-002 (repeating GAP-002 from Week 1) — EOD routine missed on 5/5; execution routine missed on 5/4. Midsession ran on only 3 of 5 days in Week 2. Pattern persists from Week 1 (midsession ran 1/5 days). This is the second week of the same scheduler gap. Severity upgraded to HIGH.
+- **Proposed change:** Investigate why scheduled make targets fail to run on some days. Add harness-level health check: if EOD journal for date D is missing by 5:30 PM ET, send an alert or attempt retry.
+- **Expected SPY outperformance impact:** MEDIUM — mid-session exits (e.g., XLE trend break on 5/6) are a key source of alpha. Missed mid-sessions leave intraday risk unmonitored.
+- **Request:** Operator fix scheduler reliability before Week 3.
+
+### PROPOSED CHANGE (Week 2) — #3 [MEDIUM]
+- **Target:** `tools/append_metrics.py` or EOD harness trigger
+- **Rationale:** GAP-W2-004 — `metrics/daily-metrics.csv` has no rows for any of the 10 trading days in Weeks 1–2 (aside from the 3 pre-experiment rows). The weekly review cannot use the CSV for quantitative trend analysis; all performance data was reconstructed from journals. This was also flagged in Week 1 (GAP-004) and not yet fixed.
+- **Proposed change:** Ensure `append_metrics.py` runs automatically after each EOD routine close (via Makefile or harness hook). Use market date (not wall-clock date) for the row timestamp to prevent late-run date mismatches.
+- **Expected SPY outperformance impact:** N/A — operational tracking only.
+- **Request:** Operator fix before Week 3.
+
+---
+
 ## [2026-05-11 ~8:35 ET — Pre-Market Routine]
 
-**NVDA POSITION DISCREPANCY — UNRECORDED TRADE**
-- NVDA (2.0 shares, avg_entry $216.63) appears in live Alpaca positions but was NOT in last-session.md (written 5/7 execution) or position-highs.json.
-- No journal exists for 2026-05-08 (Friday). The last committed routine was 2026-05-07 execution.
-- Cash delta confirms trade: $3,906.83 (5/7) → $3,473.57 (5/11) = −$433.26 ≈ 2 × $216.63.
-- Possible causes: (a) routine ran on 5/8 but failed to commit/push; (b) manual operator trade.
-- Action taken by this routine: initialized NVDA in position-highs.json (high_close = entry_price = $216.63), placed GTC stop order at $199.30 (stop_order_id: `216377a3-76e3-486c-86a9-3206bc12e956` — SUCCEEDED, whole shares).
-- **Operator action required:** Clarify how NVDA was opened. If a routine ran on 5/8, recover and commit any local journals/state. If manual trade, confirm avg_entry $216.63 is accurate.
+**NVDA POSITION DISCREPANCY — RESOLVED**
+- NVDA (2.0 shares, avg_entry $216.63) found in live Alpaca positions but NOT in last-session.md (written 5/7 execution). No pre-market journal existed for 5/8.
+- Weekly-review (5/9) had confirmed NVDA position was real (routine ran on 5/8 but push failed). Accepted as-is.
+- Action taken by this routine: initialized NVDA stop order (GTC, 2.0 whole shares) at $199.30 — SUCCEEDED. stop_order_id: `216377a3-76e3-486c-86a9-3206bc12e956`. Updated position-highs.json.
+- Note: operator commit "fix: stop order GTC→DAY for fractional positions" on 5/9 may have resolved fractional stop issue. NVDA success confirms whole-share GTC works. Fractional positions still need DAY stop approach.
 
-**NVDA EARNINGS — approaching threshold**
-- NVDA next earnings: 2026-05-20 (9 days). Falls just above EARNINGS_THIS_WEEK ≤7d flag threshold.
-- By next pre-market (5/12), earnings will be 8 days away — still above threshold but approaching. By 5/14, within threshold.
-- Recommended: do not add to NVDA before earnings. Position currently borderline RS (+0.08%) at 4.27% equity — no reason to add regardless.
+**NVDA EARNINGS — approaching EARNINGS_THIS_WEEK threshold**
+- NVDA next earnings: 2026-05-20 (9 days as of 5/11). Threshold for EARNINGS_THIS_WEEK is ≤7 days.
+- By 5/14 (Thursday), NVDA will be ≤7 days from earnings → EARNINGS_THIS_WEEK flag will trigger.
+- Do not add to NVDA. Borderline RS (+0.08%), already at 4.27% equity.
 
 **REGIME DOWNGRADE: BULL → MIXED**
-- 5/7: BULL (8/12 BULLISH). 5/11 bars: MIXED (7/12 BULLISH).
-- BRK.B moved to BULLISH (close $475.65 > SMA_13 $471.78), but another ticker fell BEARISH on 5/8 data (net change −1).
-- Strategy: cash target 25–40%, selective entries, top-3 RS cap per session.
+- 5/7: BULL (8/12 BULLISH). 5/8 bars: 7/12 BULLISH = MIXED.
+- Cash target shifts from 10–25% to 25–40%. Current cash 34.6% is within MIXED target.
 
-**AMZN RS DETERIORATION**
-- AMZN RS_spread now NEUTRAL (−0.05%) — effectively zero. RS_MOMENTUM_DECAY flag active since 5/6.
-- One session below −1% triggers position trim from 12.86% → 8%.
-- No action taken today (RS not yet NEGATIVE). Flagging for awareness.
+**AMZN RS DETERIORATION — TRIM PENDING**
+- AMZN RS at −0.05% (NEUTRAL, sub-Standard tier). RS_MOMENTUM_DECAY active since 5/6.
+- Weekly-review flagged: trim to ~8% of equity (sell ~1.81 shares from 4.76). Sizing-down rule applies.
+- Pre-market decision: monitor at execution; trim if RS remains ≤ 1% at 9:45 AM.
 
 **STOP ORDER MILESTONE**
-- NVDA (2.0 whole shares): GTC stop order placed successfully — first successful stop placement since XLE (also whole shares). Confirms fractional GTC error is Alpaca-side restriction on fractional qty.
-- AAPL, AMZN, GOOGL, LLY, QQQ: still no standing stops. All manual enforcement.
+- NVDA GTC stop placed successfully. Remote commit fixed fractional stop tool (DAY orders).
+- Testing at execution: attempt stop orders for fractional positions using updated tool.

@@ -2,7 +2,7 @@
 **Written by:** pre-market-research
 **Date:** 2026-05-11
 **Model used:** claude-sonnet-4-6
-**Week number:** 2
+**Week number:** 3
 
 ---
 
@@ -29,10 +29,10 @@ SPY_10d_ROC = +3.30% (bars[-1]=5/8 $737.54, bars[-11]=4/24 $713.97)
 | Ticker | RS_spread | Flag |
 |--------|-----------|------|
 | AAPL | +4.86% | POSITIVE — High tier (near Very High) |
-| AMZN | −0.05% | NEUTRAL — RS_MOMENTUM_DECAY ACTIVE (4th+ consecutive decline) |
+| AMZN | −0.05% | NEUTRAL — RS_MOMENTUM_DECAY ACTIVE; weekly-review flagged TRIM pending |
 | GOOGL | +13.06% | STRONG — Very High tier |
 | LLY | +4.00% | POSITIVE — High tier (weak vol 0.76) |
-| NVDA | +0.08% | POSITIVE (borderline) — Borderline tier |
+| NVDA | +0.08% | POSITIVE (borderline) — Borderline tier; earnings 5/20 (9d) |
 | QQQ | +3.81% | POSITIVE — High tier |
 
 ## position-highs.json State (updated 5/11 pre-market)
@@ -47,6 +47,7 @@ SPY_10d_ROC = +3.30% (bars[-1]=5/8 $737.54, bars[-11]=4/24 $713.97)
 
 ## Performance Summary
 - Cumulative: agent +0.226% vs SPY +3.129% → delta ~−2.90 pp (agent trailing)
+- Week 2 (per weekly-review 5/9): agent +0.560% vs SPY +2.368% (delta −1.808 pp week-over-week)
 
 ## Regime
 MIXED — 7/12 BULLISH (downgrade from BULL 8/12 on 5/7)
@@ -64,11 +65,10 @@ BEARISH: XLV, XLE, MSFT, META, JPM
 | NVDA | — | — | +0.08% | new position |
 
 ## Carry-Forward for Execution 2026-05-11
-1. **GOOGL conditional add** — only if price ≥ $404.68 at 9:45 AM (1% above 5/8 close $400.67). MIXED regime → no firm commitment. Pre-market price $396.50.
-2. **GOOGL trailing** — gap to activation: high_close $400.67 vs threshold $410.63 = $9.96. Update position-highs.json if GOOGL closes above $410.63 today.
-3. **AMZN RS_MOMENTUM_DECAY** — flag active. RS NEUTRAL (−0.05%). Trim from 12.86% → 8% if RS_spread drops below −1% at any session.
+1. **AMZN TRIM (from weekly-review)**: RS at −0.05% (NEUTRAL, sub-Standard tier). RS_MOMENTUM_DECAY active. Weekly-review flagged: trim from 4.76 → ~2.95 shares (12.86% → ~8%). Per strategy "sizing down": RS dropped below Standard tier (1-3%); consider trim to tier ceiling. Trim decision: execute at market-open-execution if RS still ≤ 1% confirmed; sell ~1.81 shares at market.
+2. **GOOGL conditional add** — only if price ≥ $404.68 at 9:45 AM (1% above 5/8 close $400.67). MIXED regime → no firm commitment. Pre-market price $396.50.
+3. **GOOGL trailing** — gap to activation: high_close $400.67 vs threshold $410.63 = $9.96. Update position-highs.json if GOOGL closes above $410.63 today.
 4. **LLY warning zone** — gap: current $948.66 vs warning $938.06 = $10.60. Monitor at every routine.
 5. **Stop orders manual** — AAPL, AMZN, GOOGL, LLY, QQQ have no standing stop orders. Manual check each routine.
 6. **NVDA** — stop order placed. Do not add before 5/20 earnings (9 days). Borderline RS (+0.08%).
-7. **NVDA discrepancy** — flagged to operator. No 5/8 journal exists. Routine gap for 5/8 and 5/9-10 (weekend). Operator should investigate.
-8. **AAPL potential add** — strong RS jump to +4.86%. Monitor at execution for price ≥ $294.62 (soft gate). No firm commitment.
+7. **AAPL potential add** — strong RS jump to +4.86%. Monitor at execution for price ≥ $294.62 (soft gate). No firm commitment given MIXED regime.

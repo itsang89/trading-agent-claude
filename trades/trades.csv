@@ -23,3 +23,4 @@ date,time,ticker,side,qty,price,order_id,status,routine
 2026-05-06,13:39:29,XLE,sell,14.0,,94a06d90-0a26-40c2-a838-fb85459b8b63,OrderStatus.PENDING_NEW,
 2026-05-07,09:47:05,QQQ,buy,0.7,,e4fa7017-33a6-403f-8fcf-d8856112e023,OrderStatus.PENDING_NEW,
 2026-05-08,09:46:45,NVDA,buy,2.0,,889812df-47e4-437b-8963-aecf18701451,OrderStatus.PENDING_NEW,
+2026-05-11,09:48:19,AMZN,sell,1.81,,5c8408e3-9dc0-4ee0-9e0f-8fcce8cd8340,OrderStatus.PENDING_NEW,
